@@ -1,7 +1,10 @@
 using Ink.Runtime;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class DialogManager : MonoBehaviour
@@ -28,7 +31,10 @@ public class DialogManager : MonoBehaviour
 
     [Header("²Õ¥ó")]
     public Transform characterGroup;
+    public Transform dialogChoiceGroup;
     public GameObject characterGameObject;
+    public GameObject backgroundGameObject;
+    public GameObject dialogChoiceButtonGameObject;
 
     private Dictionary<string, Transform> dialogCharacterDic;
 
@@ -79,8 +85,11 @@ public class DialogManager : MonoBehaviour
         dialogTextGameObject.text = dialog;
     }
 
-    private void nextDialog() 
+    private void nextDialog()
     {
+        if (dialogChoiceGroup.childCount > 0) 
+        return; 
+
         if (story.canContinue) 
         {
             story.Continue();
@@ -96,6 +105,38 @@ public class DialogManager : MonoBehaviour
                 readDialogTags(story.currentTags);
             }
         }
+        else if (story.currentChoices.Count > 0) 
+        {
+            for (int i = 0; i < story.currentChoices.Count; i++) 
+            {
+                Choice choice = story.currentChoices[i];
+                int index = choice.index;
+                GameObject dialogChoiceButton = Instantiate(dialogChoiceButtonGameObject, dialogChoiceGroup);
+                dialogChoiceButton.GetComponentInChildren<TMP_Text>().text = choice.text;
+                dialogChoiceButton.GetComponent<Button>().onClick.AddListener
+                    (
+                    delegate
+                    {
+                        OnClickChoiceButton(index);
+                    }
+                    );
+            }
+            if (dialogChoiceGroup.childCount > 0)
+            {
+                StartCoroutine(choiceFirstButton());
+            }
+        }
+    }
+
+    public IEnumerator choiceFirstButton()
+    {
+        dialogChoiceGroup.GetComponent<CanvasGroup>().interactable = false;
+        dialogChoiceGroup.gameObject.SetActive(true);
+
+        yield return new WaitForEndOfFrame();
+
+        dialogChoiceGroup.GetComponent<CanvasGroup>().interactable = true;
+        EventSystem.current.SetSelectedGameObject(dialogChoiceGroup.transform.GetChild(0).gameObject);
     }
 
     private void readDialogTags(List<string> dialogTags) 
@@ -118,6 +159,10 @@ public class DialogManager : MonoBehaviour
                     break;
                 case "exit":
 
+                    break;
+                case "background":
+                    string backgroundID = tagsCmd[1];
+                    showBackground(backgroundID);
                     break;
                 case "battle":
                     string battleID = tagsCmd[1];
@@ -155,5 +200,40 @@ public class DialogManager : MonoBehaviour
             dialogCharacterDic[ch].rotation = Quaternion.Euler(0, RL ? 0 : 180, 0);
             dialogCharacterDic[ch].SetAsLastSibling();
         }
+    }
+
+    private void showBackground(string backgroundID) 
+    {
+        Sprite backgroundImage = DataManager.instance.backgroundImageDataList.getData(backgroundID);
+        if (backgroundImage != null) 
+        {
+            backgroundGameObject.GetComponent<Image>().sprite = backgroundImage;
+            backgroundGameObject.GetComponent<Image>().color = Color.white;
+        }
+        else 
+        {
+            backgroundGameObject.GetComponent<Image>().sprite = null;
+            backgroundGameObject.GetComponent<Image>().color = Color.clear;
+        }
+    }
+
+    public void OnClickChoiceButton(int index) 
+    {
+        story.ChooseChoiceIndex(index);
+        for (int i = 0; i < dialogChoiceGroup.childCount; i++)
+        {
+            Destroy(dialogChoiceGroup.GetChild(i).gameObject);
+        }
+
+        StartCoroutine(continueStory());
+    }
+
+    public IEnumerator continueStory()
+    {
+        dialogChoiceGroup.gameObject.SetActive(false);
+
+        yield return new WaitForEndOfFrame();
+
+        nextDialog();
     }
 }

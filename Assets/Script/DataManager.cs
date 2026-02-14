@@ -8,6 +8,7 @@ public class DataManager : MonoBehaviour
 
     [Header("資料清單")]
     public CharacterImageDataListSO characterImageDataList;
+    public CharacterImageDataListSO backgroundImageDataList;
     public BattleDataListSO battleDataList;
     public UnitDataListSO unitDataList;
     public SkillDataListSO skillDataList;
