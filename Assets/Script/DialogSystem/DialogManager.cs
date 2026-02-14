@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public class DialogManager : MonoBehaviour
 {
     [Header("∫ ≈•")]
-    public VoidEventSO gameConfirmEvent;
+    public VoidEventSO dialogConfirmEvent;
 
     [Header("¨G®∆")]
     public TextAsset ink;
@@ -42,12 +42,12 @@ public class DialogManager : MonoBehaviour
 
     private void OnEnable()
     {
-        gameConfirmEvent.onEventRaised += onGameConfirmEvent;
+        dialogConfirmEvent.onEventRaised += onDialogConfirmEvent;
     }
 
     private void OnDisable()
     {
-        gameConfirmEvent.onEventRaised -= onGameConfirmEvent;
+        dialogConfirmEvent.onEventRaised -= onDialogConfirmEvent;
     }
     
     private void Update()
@@ -61,7 +61,7 @@ public class DialogManager : MonoBehaviour
             updataText(curNameText, curDialogText);
         }
     }
-    private void onGameConfirmEvent()
+    private void onDialogConfirmEvent()
     {
         if (curDialogText != dialogText && dialogText != "")
         {

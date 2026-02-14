@@ -7,3 +7,9 @@ public enum Attribute
     Wisdom,
     Charisma
 }
+
+public enum BattleState 
+{
+    Ready,
+    Select
+}

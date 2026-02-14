@@ -4,14 +4,14 @@ using UnityEngine;
 public class BattleDataSO : ScriptableObject
 {
     public BattleMapDataSO mapData;
-    public string[] enemyUnit = new string[10];
+    public string[] enemyUnit;
     public string ourUnit;
 
     private void OnValidate()
     {
-        if (mapData != null && enemyUnit.Length != mapData.unitSite.Count)
+        if (mapData != null && enemyUnit.Length != mapData.unitSite.Length)
         {
-            System.Array.Resize(ref enemyUnit, mapData.unitSite.Count);
+            System.Array.Resize(ref enemyUnit, mapData.unitSite.Length);
         }
     }
 }

@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c055d81eb0ab24f4e979d59cf2691ea4, type: 3}
   m_Name: A
   m_EditorClassIdentifier: 
+  siteCount: 5
   image: {fileID: 0}
   unitSite:
-  - {x: 3, y: 2}
-  - {x: 4, y: 1.5}
-  - {x: 5, y: 1}
-  - {x: 6, y: 0.5}
-  - {x: 7, y: 0}
+  - {x: -2.5, y: 0}
+  - {x: 0, y: 0}
+  - {x: 2.5, y: 0}
+  - {x: 5, y: 0}
+  - {x: 7.5, y: 0}

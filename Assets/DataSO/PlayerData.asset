@@ -9,14 +9,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 51b4ebff70f1bbd43afa39a4464b2efb, type: 3}
-  m_Name: Battle00001
+  m_Script: {fileID: 11500000, guid: 770c80f180a063a448de26c0abbd2b7b, type: 3}
+  m_Name: PlayerData
   m_EditorClassIdentifier: 
-  mapData: {fileID: 11400000, guid: 24c434646db389e4380259c5fdb07b07, type: 2}
-  enemyUnit:
-  - UT00002
-  - UT00002
-  - UT00002
-  - UT00002
-  - UT00002
-  ourUnit: 
+  image: {fileID: 0}
+  strength: 0
+  dexterity: 0
+  constitution: 0
+  intelligence: 0
+  wisdom: 0
+  charisma: 0
+  curMartial:
+  - 1
+  - 1
+  curMagic:
+  - 1
+  item: []

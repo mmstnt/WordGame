@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26bbc675718040b42807492bea1f3914, type: 3}
   m_Name: Unit00002
   m_EditorClassIdentifier: 
+  image: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   strength: 50
   dexterity: 50
   constitution: 50

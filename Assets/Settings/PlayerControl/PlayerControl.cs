@@ -28,9 +28,36 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
             ""id"": ""91d8b77e-9ede-4f58-8d9c-a5aaa1e02715"",
             ""actions"": [
                 {
-                    ""name"": ""Confirm"",
+                    ""name"": ""DialogConfirm"",
                     ""type"": ""Button"",
                     ""id"": ""fd2560b8-742b-4a1a-8462-ec6a637e8edd"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Select"",
+                    ""type"": ""Value"",
+                    ""id"": ""aba52e20-2e67-4a09-abe0-69a81d3ddb2d"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""SelectConfirm"",
+                    ""type"": ""Button"",
+                    ""id"": ""dc5a8392-33c2-4df1-b8e8-6e0b4ff64e2e"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SelectBack"",
+                    ""type"": ""Button"",
+                    ""id"": ""5595e64a-d052-4839-9353-002931e8ec63"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
@@ -45,7 +72,95 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Confirm"",
+                    ""action"": ""DialogConfirm"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""55f8f421-429c-4561-9fd7-aa5c670653a2"",
+                    ""path"": ""<Mouse>/press"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""DialogConfirm"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""Direction"",
+                    ""id"": ""63d3e7a4-7cb9-425b-ba2c-b60553b883a0"",
+                    ""path"": ""2DVector"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Select"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""up"",
+                    ""id"": ""3630d3f7-285e-4995-b086-3db79348fe7c"",
+                    ""path"": ""<Keyboard>/upArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Select"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""down"",
+                    ""id"": ""86433f98-f2f4-4580-9266-2436c6e6aa35"",
+                    ""path"": ""<Keyboard>/downArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Select"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""left"",
+                    ""id"": ""897122b9-832d-4821-9f2e-31d072ab6806"",
+                    ""path"": ""<Keyboard>/leftArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Select"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""right"",
+                    ""id"": ""52639c32-f3e2-48fb-a0af-5cdfd4fc6a91"",
+                    ""path"": ""<Keyboard>/rightArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Select"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""92d3696f-854e-49ce-908c-fb402c11ab12"",
+                    ""path"": ""<Keyboard>/enter"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SelectConfirm"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b78366a0-a252-40e5-bcdc-bff81fcd61b2"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SelectBack"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -56,7 +171,10 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
 }");
         // Input
         m_Input = asset.FindActionMap("Input", throwIfNotFound: true);
-        m_Input_Confirm = m_Input.FindAction("Confirm", throwIfNotFound: true);
+        m_Input_DialogConfirm = m_Input.FindAction("DialogConfirm", throwIfNotFound: true);
+        m_Input_Select = m_Input.FindAction("Select", throwIfNotFound: true);
+        m_Input_SelectConfirm = m_Input.FindAction("SelectConfirm", throwIfNotFound: true);
+        m_Input_SelectBack = m_Input.FindAction("SelectBack", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -118,12 +236,18 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
     // Input
     private readonly InputActionMap m_Input;
     private List<IInputActions> m_InputActionsCallbackInterfaces = new List<IInputActions>();
-    private readonly InputAction m_Input_Confirm;
+    private readonly InputAction m_Input_DialogConfirm;
+    private readonly InputAction m_Input_Select;
+    private readonly InputAction m_Input_SelectConfirm;
+    private readonly InputAction m_Input_SelectBack;
     public struct InputActions
     {
         private @PlayerControl m_Wrapper;
         public InputActions(@PlayerControl wrapper) { m_Wrapper = wrapper; }
-        public InputAction @Confirm => m_Wrapper.m_Input_Confirm;
+        public InputAction @DialogConfirm => m_Wrapper.m_Input_DialogConfirm;
+        public InputAction @Select => m_Wrapper.m_Input_Select;
+        public InputAction @SelectConfirm => m_Wrapper.m_Input_SelectConfirm;
+        public InputAction @SelectBack => m_Wrapper.m_Input_SelectBack;
         public InputActionMap Get() { return m_Wrapper.m_Input; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -133,16 +257,34 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
         {
             if (instance == null || m_Wrapper.m_InputActionsCallbackInterfaces.Contains(instance)) return;
             m_Wrapper.m_InputActionsCallbackInterfaces.Add(instance);
-            @Confirm.started += instance.OnConfirm;
-            @Confirm.performed += instance.OnConfirm;
-            @Confirm.canceled += instance.OnConfirm;
+            @DialogConfirm.started += instance.OnDialogConfirm;
+            @DialogConfirm.performed += instance.OnDialogConfirm;
+            @DialogConfirm.canceled += instance.OnDialogConfirm;
+            @Select.started += instance.OnSelect;
+            @Select.performed += instance.OnSelect;
+            @Select.canceled += instance.OnSelect;
+            @SelectConfirm.started += instance.OnSelectConfirm;
+            @SelectConfirm.performed += instance.OnSelectConfirm;
+            @SelectConfirm.canceled += instance.OnSelectConfirm;
+            @SelectBack.started += instance.OnSelectBack;
+            @SelectBack.performed += instance.OnSelectBack;
+            @SelectBack.canceled += instance.OnSelectBack;
         }
 
         private void UnregisterCallbacks(IInputActions instance)
         {
-            @Confirm.started -= instance.OnConfirm;
-            @Confirm.performed -= instance.OnConfirm;
-            @Confirm.canceled -= instance.OnConfirm;
+            @DialogConfirm.started -= instance.OnDialogConfirm;
+            @DialogConfirm.performed -= instance.OnDialogConfirm;
+            @DialogConfirm.canceled -= instance.OnDialogConfirm;
+            @Select.started -= instance.OnSelect;
+            @Select.performed -= instance.OnSelect;
+            @Select.canceled -= instance.OnSelect;
+            @SelectConfirm.started -= instance.OnSelectConfirm;
+            @SelectConfirm.performed -= instance.OnSelectConfirm;
+            @SelectConfirm.canceled -= instance.OnSelectConfirm;
+            @SelectBack.started -= instance.OnSelectBack;
+            @SelectBack.performed -= instance.OnSelectBack;
+            @SelectBack.canceled -= instance.OnSelectBack;
         }
 
         public void RemoveCallbacks(IInputActions instance)
@@ -162,6 +304,9 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
     public InputActions @Input => new InputActions(this);
     public interface IInputActions
     {
-        void OnConfirm(InputAction.CallbackContext context);
+        void OnDialogConfirm(InputAction.CallbackContext context);
+        void OnSelect(InputAction.CallbackContext context);
+        void OnSelectConfirm(InputAction.CallbackContext context);
+        void OnSelectBack(InputAction.CallbackContext context);
     }
 }

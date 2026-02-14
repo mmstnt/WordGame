@@ -9,6 +9,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 26ee174217bfa7a4fa850a06cb15c455, type: 3}
-  m_Name: GameConfirmEvent
+  m_Script: {fileID: 11500000, guid: 3bc588bff32de2f439c2caad03bdceb0, type: 3}
+  m_Name: RecordLastButtonEvent
   m_EditorClassIdentifier: 
