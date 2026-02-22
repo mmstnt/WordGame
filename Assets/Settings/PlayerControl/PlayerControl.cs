@@ -37,7 +37,7 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Select"",
+                    ""name"": ""KeyboardSelect"",
                     ""type"": ""Value"",
                     ""id"": ""aba52e20-2e67-4a09-abe0-69a81d3ddb2d"",
                     ""expectedControlType"": ""Vector2"",
@@ -59,6 +59,15 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
                     ""type"": ""Button"",
                     ""id"": ""5595e64a-d052-4839-9353-002931e8ec63"",
                     ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""MouseMove"",
+                    ""type"": ""PassThrough"",
+                    ""id"": ""b3723d03-5f58-4bff-85ec-0ee0de3969b5"",
+                    ""expectedControlType"": ""Vector2"",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
@@ -94,7 +103,7 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Select"",
+                    ""action"": ""KeyboardSelect"",
                     ""isComposite"": true,
                     ""isPartOfComposite"": false
                 },
@@ -105,7 +114,7 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Select"",
+                    ""action"": ""KeyboardSelect"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
                 },
@@ -116,7 +125,7 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Select"",
+                    ""action"": ""KeyboardSelect"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
                 },
@@ -127,7 +136,7 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Select"",
+                    ""action"": ""KeyboardSelect"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
                 },
@@ -138,7 +147,7 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Select"",
+                    ""action"": ""KeyboardSelect"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
                 },
@@ -146,6 +155,17 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
                     ""name"": """",
                     ""id"": ""92d3696f-854e-49ce-908c-fb402c11ab12"",
                     ""path"": ""<Keyboard>/enter"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SelectConfirm"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""381e27ac-c117-4991-b31b-83901eb817eb"",
+                    ""path"": ""<Mouse>/leftButton"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -163,6 +183,17 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
                     ""action"": ""SelectBack"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""818acc33-cb91-4b72-8649-1ec75942afe8"",
+                    ""path"": ""<Mouse>/position"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""MouseMove"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -172,9 +203,10 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
         // Input
         m_Input = asset.FindActionMap("Input", throwIfNotFound: true);
         m_Input_DialogConfirm = m_Input.FindAction("DialogConfirm", throwIfNotFound: true);
-        m_Input_Select = m_Input.FindAction("Select", throwIfNotFound: true);
+        m_Input_KeyboardSelect = m_Input.FindAction("KeyboardSelect", throwIfNotFound: true);
         m_Input_SelectConfirm = m_Input.FindAction("SelectConfirm", throwIfNotFound: true);
         m_Input_SelectBack = m_Input.FindAction("SelectBack", throwIfNotFound: true);
+        m_Input_MouseMove = m_Input.FindAction("MouseMove", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -237,17 +269,19 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
     private readonly InputActionMap m_Input;
     private List<IInputActions> m_InputActionsCallbackInterfaces = new List<IInputActions>();
     private readonly InputAction m_Input_DialogConfirm;
-    private readonly InputAction m_Input_Select;
+    private readonly InputAction m_Input_KeyboardSelect;
     private readonly InputAction m_Input_SelectConfirm;
     private readonly InputAction m_Input_SelectBack;
+    private readonly InputAction m_Input_MouseMove;
     public struct InputActions
     {
         private @PlayerControl m_Wrapper;
         public InputActions(@PlayerControl wrapper) { m_Wrapper = wrapper; }
         public InputAction @DialogConfirm => m_Wrapper.m_Input_DialogConfirm;
-        public InputAction @Select => m_Wrapper.m_Input_Select;
+        public InputAction @KeyboardSelect => m_Wrapper.m_Input_KeyboardSelect;
         public InputAction @SelectConfirm => m_Wrapper.m_Input_SelectConfirm;
         public InputAction @SelectBack => m_Wrapper.m_Input_SelectBack;
+        public InputAction @MouseMove => m_Wrapper.m_Input_MouseMove;
         public InputActionMap Get() { return m_Wrapper.m_Input; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -260,15 +294,18 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
             @DialogConfirm.started += instance.OnDialogConfirm;
             @DialogConfirm.performed += instance.OnDialogConfirm;
             @DialogConfirm.canceled += instance.OnDialogConfirm;
-            @Select.started += instance.OnSelect;
-            @Select.performed += instance.OnSelect;
-            @Select.canceled += instance.OnSelect;
+            @KeyboardSelect.started += instance.OnKeyboardSelect;
+            @KeyboardSelect.performed += instance.OnKeyboardSelect;
+            @KeyboardSelect.canceled += instance.OnKeyboardSelect;
             @SelectConfirm.started += instance.OnSelectConfirm;
             @SelectConfirm.performed += instance.OnSelectConfirm;
             @SelectConfirm.canceled += instance.OnSelectConfirm;
             @SelectBack.started += instance.OnSelectBack;
             @SelectBack.performed += instance.OnSelectBack;
             @SelectBack.canceled += instance.OnSelectBack;
+            @MouseMove.started += instance.OnMouseMove;
+            @MouseMove.performed += instance.OnMouseMove;
+            @MouseMove.canceled += instance.OnMouseMove;
         }
 
         private void UnregisterCallbacks(IInputActions instance)
@@ -276,15 +313,18 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
             @DialogConfirm.started -= instance.OnDialogConfirm;
             @DialogConfirm.performed -= instance.OnDialogConfirm;
             @DialogConfirm.canceled -= instance.OnDialogConfirm;
-            @Select.started -= instance.OnSelect;
-            @Select.performed -= instance.OnSelect;
-            @Select.canceled -= instance.OnSelect;
+            @KeyboardSelect.started -= instance.OnKeyboardSelect;
+            @KeyboardSelect.performed -= instance.OnKeyboardSelect;
+            @KeyboardSelect.canceled -= instance.OnKeyboardSelect;
             @SelectConfirm.started -= instance.OnSelectConfirm;
             @SelectConfirm.performed -= instance.OnSelectConfirm;
             @SelectConfirm.canceled -= instance.OnSelectConfirm;
             @SelectBack.started -= instance.OnSelectBack;
             @SelectBack.performed -= instance.OnSelectBack;
             @SelectBack.canceled -= instance.OnSelectBack;
+            @MouseMove.started -= instance.OnMouseMove;
+            @MouseMove.performed -= instance.OnMouseMove;
+            @MouseMove.canceled -= instance.OnMouseMove;
         }
 
         public void RemoveCallbacks(IInputActions instance)
@@ -305,8 +345,9 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
     public interface IInputActions
     {
         void OnDialogConfirm(InputAction.CallbackContext context);
-        void OnSelect(InputAction.CallbackContext context);
+        void OnKeyboardSelect(InputAction.CallbackContext context);
         void OnSelectConfirm(InputAction.CallbackContext context);
         void OnSelectBack(InputAction.CallbackContext context);
+        void OnMouseMove(InputAction.CallbackContext context);
     }
 }

@@ -122,81 +122,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &48484121
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 48484122}
-  - component: {fileID: 48484124}
-  - component: {fileID: 48484123}
-  m_Layer: 5
-  m_Name: UI
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &48484122
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 48484121}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1787396916}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -40}
-  m_SizeDelta: {x: 0, y: 80}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &48484123
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 48484121}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
---- !u!222 &48484124
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 48484121}
-  m_CullTransparentMesh: 1
 --- !u!1 &60798334
 GameObject:
   m_ObjectHideFlags: 0
@@ -3585,6 +3510,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1654050191}
   - component: {fileID: 1654050192}
+  - component: {fileID: 1654050193}
   m_Layer: 0
   m_Name: BattleManager
   m_TagString: Untagged
@@ -3624,20 +3550,38 @@ MonoBehaviour:
   unitLayer:
     serializedVersion: 2
     m_Bits: 64
-  selectConfirmEvent: {fileID: 11400000, guid: f5c11bfb707ec3b43baeb3c409dbb656, type: 2}
+  enterSelectEvent: {fileID: 11400000, guid: 83fdf7e5d6df3544f8733b084b444d2b, type: 2}
   selectBackEvent: {fileID: 11400000, guid: 7fa1dcef391ac9f44ae235421ef88512, type: 2}
   recordLastButtonEvent: {fileID: 11400000, guid: d25bafdc135c30147818dc4311ca5700, type: 2}
+  selectConfirmEvent: {fileID: 11400000, guid: e866fbb132ff5a44a8d2d720aee6d001, type: 2}
   castSkillEvent: {fileID: 11400000, guid: ac7a6450e526eda4b839aae6af244479, type: 2}
   switchSkillGroupEvent: {fileID: 11400000, guid: 1b5488cb48db18a4185ae03d7ee0e777, type: 2}
-  selectEvent: {fileID: 11400000, guid: 9885ac9031db0934e97e25894f7e54e6, type: 2}
+  keyboardSelectEvent: {fileID: 11400000, guid: 9885ac9031db0934e97e25894f7e54e6, type: 2}
+  mouseMoveEvent: {fileID: 11400000, guid: 0a71666e55d7c4545b56387344f8c1fc, type: 2}
   playerBattleData: {fileID: 0}
   enemyUnit: []
+  playerUnit: []
   battleState: 0
   unitGroup: {fileID: 819234677}
   unitHPBarGroup: {fileID: 181020458}
   unitGameObject: {fileID: 1590425536836613328, guid: 2ed47b4c579113947b89fa9db5985a2f, type: 3}
   unitHPBarGameObject: {fileID: 5231973296426514650, guid: 5b68a7405cf3f4943a6d96a6015eb1be, type: 3}
   skillButtonGameObject: {fileID: 4609581453249934213, guid: fcfd4ad8ebc230c44a449365c92e3775, type: 3}
+  actionGroup: {fileID: 60798335}
+  skillGroup: {fileID: 898934480}
+--- !u!114 &1654050193
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1654050190}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cdc664e790999254c8279418b8dbe2cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enterSelectEvent: {fileID: 11400000, guid: 83fdf7e5d6df3544f8733b084b444d2b, type: 2}
   actionGroup: {fileID: 60798335}
   skillGroup: {fileID: 898934480}
 --- !u!1 &1660830320
@@ -3670,9 +3614,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dialogConfirmEvent: {fileID: 11400000, guid: 4a22428b4f77dd64a89ada1f50390380, type: 2}
-  selectConfirmEvent: {fileID: 11400000, guid: f5c11bfb707ec3b43baeb3c409dbb656, type: 2}
   selectBackEvent: {fileID: 11400000, guid: 7fa1dcef391ac9f44ae235421ef88512, type: 2}
-  selectEvent: {fileID: 11400000, guid: 9885ac9031db0934e97e25894f7e54e6, type: 2}
+  selectConfirmEvent: {fileID: 11400000, guid: e866fbb132ff5a44a8d2d720aee6d001, type: 2}
+  keyboardSelectEvent: {fileID: 11400000, guid: 9885ac9031db0934e97e25894f7e54e6, type: 2}
+  mouseMoveEvent: {fileID: 11400000, guid: 0a71666e55d7c4545b56387344f8c1fc, type: 2}
   dialogManager: {fileID: 621618366}
   battleManager: {fileID: 1654050190}
 --- !u!4 &1660830322
@@ -3861,7 +3806,6 @@ RectTransform:
   m_Children:
   - {fileID: 341218955}
   - {fileID: 2019844048}
-  - {fileID: 48484122}
   - {fileID: 645906972}
   - {fileID: 1043277694}
   m_Father: {fileID: 621618368}

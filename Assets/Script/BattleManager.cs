@@ -1,28 +1,30 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using TMPro;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using static UnityEngine.EventSystems.StandaloneInputModule;
 
 public class BattleManager : MonoBehaviour
 {
     public LayerMask unitLayer;
+    [Header("廣播")]
+    public VoidEventSO enterSelectEvent;
+
     [Header("監聽")]
-    public VoidEventSO selectConfirmEvent;
     public VoidEventSO selectBackEvent;
     public IntEventSO recordLastButtonEvent;
+    public StringEventSO selectConfirmEvent;
     public StringEventSO castSkillEvent;
     public StringEventSO switchSkillGroupEvent;
-    public Vector2EventSO selectEvent;
+    public Vector2EventSO keyboardSelectEvent;
+    public Vector2EventSO mouseMoveEvent;
 
     [Header("戰場")]
     public PlayerDataSO playerBattleData;
     public Unit[] enemyUnit;
+    public Unit[] playerUnit;
     public BattleState battleState;
 
     [Header("組件")]
@@ -42,7 +44,6 @@ public class BattleManager : MonoBehaviour
 
     private enum InputMode { Mouse, Keyboard }
     private InputMode inputMode;
-    private Vector2 lastMousePos;
     private int lastActionButtonIndex;
     private int lastSkillButtonIndex;
 
@@ -59,7 +60,8 @@ public class BattleManager : MonoBehaviour
         castSkillEvent.onEventRaised += onCastSkillEvent;
         recordLastButtonEvent.onEventRaised += onRecordLastButtonEvent;
         switchSkillGroupEvent.onEventRaised += onSwitchSkillGroupEvent;
-        selectEvent.onEventRaised += onSelectEvent;
+        keyboardSelectEvent.onEventRaised += onKeyboardSelectEvent;
+        mouseMoveEvent.onEventRaised += onMouseMoveEvent;
     }
 
     private void OnDisable()
@@ -69,59 +71,35 @@ public class BattleManager : MonoBehaviour
         castSkillEvent.onEventRaised -= onCastSkillEvent;
         recordLastButtonEvent.onEventRaised -= onRecordLastButtonEvent;
         switchSkillGroupEvent.onEventRaised -= onSwitchSkillGroupEvent;
-        selectEvent.onEventRaised -= onSelectEvent;
+        keyboardSelectEvent.onEventRaised -= onKeyboardSelectEvent;
+        mouseMoveEvent.onEventRaised -= onMouseMoveEvent;
     }
 
-    public void Update()
+    private void onMouseMoveEvent(Vector2 mousePos)
     {
-        switchInputModeToMouse();
+        inputMode = InputMode.Mouse;
 
-        if (battleState == BattleState.Select && inputMode == InputMode.Mouse) 
+        if (battleState == BattleState.Select && inputMode == InputMode.Mouse)
         {
-            mouseSelect();
+            mouseSelect(mousePos);
         }
     }
 
-    private void mouseSelect() 
+    private void mouseSelect(Vector2 mousePos) 
     {
-        Vector2 mousePosition = Pointer.current.position.ReadValue();
-        Vector2 worldPos = Camera.main.ScreenToWorldPoint(mousePosition);
-
+        Vector2 worldPos = Camera.main.ScreenToWorldPoint(mousePos);
         RaycastHit2D hit = Physics2D.Raycast(worldPos, Vector2.zero, 0f, unitLayer);
 
         if (hit.collider != null)
         {
             Unit currentUnit = hit.collider.GetComponent<Unit>();
 
-            if (currentUnit != null)
+            if (currentUnit != null && currentUnit != curSelectUnit)
             {
-                if (currentUnit != curSelectUnit)
-                {
-                    curSelectUnit = currentUnit;
-                    setUnitColor();
-                }
-
-                if (Pointer.current.press.wasPressedThisFrame)
-                {
-                    onSelectConfirmEvent();
-                }
+                curSelectUnit = currentUnit;
+                setUnitColor();
             }
         }
-    }
-
-    private void switchInputModeToMouse()
-    {
-        Vector2 curMousePos = Pointer.current.position.ReadValue();
-
-        //計算滑鼠移動距離
-        float mouseDelta = Vector2.Distance(curMousePos, lastMousePos);
-
-        if (mouseDelta > 0)
-        {
-            inputMode = InputMode.Mouse; //滑鼠動了，切換回滑鼠模式
-        }
-
-        lastMousePos = curMousePos;
     }
 
     public void onCastSkillEvent(string skillID)
@@ -130,16 +108,11 @@ public class BattleManager : MonoBehaviour
             return;
         
         curSkill = DataManager.instance.skillDataList.getData(skillID);
-
-        enterSelect();
-        setUnitColor();
-    }
-
-    public void enterSelect() 
-    {
-        //選擇單位模式
-        curUI.gameObject.SetActive(false);
         battleState = BattleState.Select;
+
+        enterSelectEvent.onEventRaised();
+
+        setUnitColor();
     }
 
     public void onSelectBackEvent() 
@@ -159,7 +132,7 @@ public class BattleManager : MonoBehaviour
         StartCoroutine(waitActionReactivate());
     }
 
-    public void onSelectEvent(Vector2 dir)
+    public void onKeyboardSelectEvent(Vector2 dir)
     {
         if (battleState != BattleState.Select)
             return;
@@ -169,10 +142,20 @@ public class BattleManager : MonoBehaviour
         setUnitColor();
     }
 
-    public void onSelectConfirmEvent() 
+    public void onSelectConfirmEvent(string inputDevice) 
     {
         if (battleState != BattleState.Select)
             return;
+        
+        if (inputDevice == "Mouse") 
+        {
+            Vector2 mousePosition = Pointer.current.position.ReadValue();
+            Vector2 worldPos = Camera.main.ScreenToWorldPoint(mousePosition);
+            RaycastHit2D hit = Physics2D.Raycast(worldPos, Vector2.zero, 0f, unitLayer);
+
+            if (hit.collider == null || hit.collider.GetComponent<Unit>() != curSelectUnit)
+                return;
+        }
 
         int damage = BattleCalculation.damageCalculation(curSkill);
         curSelectUnit.takeDamage(damage);
@@ -292,7 +275,6 @@ public class BattleManager : MonoBehaviour
             }
         }
 
-        curUI = actionGroup;
         curSelectUnit = reSetSelectUnit();
         setUnitColor();
         StartCoroutine(waitActionReactivate());

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Unit : MonoBehaviour
 {
-    public UnitDataSO unitData;
+    public BaseUnitSO unitData;
 
     [Header("�򥻸귽")]
     public int maxHP;
@@ -27,18 +27,25 @@ public class Unit : MonoBehaviour
         Destroy(unitHPBar.gameObject);
     }
 
-    public void initialize(UnitDataSO loadUnitData, UnitHPBar loadUnitHPBar) 
+    public void initialize(BaseUnitSO loadUnitData, UnitHPBar loadUnitHPBar) 
     {
-        unitData = loadUnitData;
-        unitHPBar = loadUnitHPBar;
+        if(loadUnitData is UnitDataSO) 
+        {
+            unitData = loadUnitData;
+            unitHPBar = loadUnitHPBar;
 
-        this.transform.GetComponent<SpriteRenderer>().sprite = unitData.image;
-        unitAttributeCalculation();
+            this.transform.GetComponent<SpriteRenderer>().sprite = unitData.image;
+            unitAttributeCalculation();
 
-        curHP = maxHP;
-        curMP = maxMP;
+            curHP = maxHP;
+            curMP = maxMP;
 
-        unitHPBar.initialize(this);
+            unitHPBar.initialize(this);
+        }
+        else if(loadUnitData is PlayerDataSO) 
+        {
+        
+        }
     }
 
     public void unitAttributeCalculation() 

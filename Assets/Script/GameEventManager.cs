@@ -1,14 +1,17 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UIElements;
 
 public class GameEventManager : MonoBehaviour
 {
     public static GameEventManager instance;
     [Header("¼s¼½")]
     public VoidEventSO dialogConfirmEvent;
-    public VoidEventSO selectConfirmEvent;
     public VoidEventSO selectBackEvent;
-    public Vector2EventSO selectEvent;
+    public StringEventSO selectConfirmEvent;
+    public Vector2EventSO keyboardSelectEvent;
+    public Vector2EventSO mouseMoveEvent;
 
     [Header("²Õ¥ó")]
     public GameObject dialogManager;
@@ -32,7 +35,8 @@ public class GameEventManager : MonoBehaviour
         playerControl.Input.DialogConfirm.started += onDialogConfirm;
         playerControl.Input.SelectConfirm.started += onSelectConfirmEvent;
         playerControl.Input.SelectBack.started += onSelectBackEvent;
-        playerControl.Input.Select.started += onSelect;
+        playerControl.Input.KeyboardSelect.started += onKeyboardSelectEvent;
+        playerControl.Input.MouseMove.performed += onMouseMoveEvent;
     }
 
     private void OnDisable()
@@ -41,7 +45,8 @@ public class GameEventManager : MonoBehaviour
         playerControl.Input.DialogConfirm.started -= onDialogConfirm;
         playerControl.Input.SelectConfirm.started -= onSelectConfirmEvent;
         playerControl.Input.SelectBack.started -= onSelectBackEvent;
-        playerControl.Input.Select.started -= onSelect;
+        playerControl.Input.KeyboardSelect.started -= onKeyboardSelectEvent;
+        playerControl.Input.MouseMove.performed -= onMouseMoveEvent;
     }
 
     private void onDialogConfirm(InputAction.CallbackContext context)
@@ -51,7 +56,8 @@ public class GameEventManager : MonoBehaviour
 
     private void onSelectConfirmEvent(InputAction.CallbackContext context)
     {
-        selectConfirmEvent.raiseEvent();
+        string inputMode = context.control.device is Mouse ? "Mouse" : "Keyboard";
+        selectConfirmEvent.raiseEvent(inputMode);
     }
 
     private void onSelectBackEvent(InputAction.CallbackContext context)
@@ -59,10 +65,16 @@ public class GameEventManager : MonoBehaviour
         selectBackEvent.raiseEvent();
     }
 
-    private void onSelect(InputAction.CallbackContext context) 
+    private void onKeyboardSelectEvent(InputAction.CallbackContext context) 
     {
         Vector2 dir = context.ReadValue<Vector2>();
-        selectEvent.raiseEvent(dir);
+        keyboardSelectEvent.raiseEvent(dir);
+    }
+
+    private void onMouseMoveEvent(InputAction.CallbackContext context)
+    {
+        Vector2 vector = context.ReadValue<Vector2>();
+        mouseMoveEvent.raiseEvent(vector);
     }
 
     public void enterBattle(string battleID) 

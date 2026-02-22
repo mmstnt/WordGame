@@ -5,37 +5,37 @@ using UnityEngine;
 
 public static class BattleCalculation
 {
-    public static int maxHPCalculation(UnitDataSO unitData) 
+    public static int maxHPCalculation(BaseUnitSO unitData) 
     {
         int maxHP = Mathf.RoundToInt(5 + ((unitData.constitution - 10) > 0 ? Mathf.Pow(unitData.constitution, 2) : Mathf.Pow(unitData.constitution, 2)) / 10);
         return maxHP;
     }
 
-    public static int maxMPCalculation(UnitDataSO unitData) 
+    public static int maxMPCalculation(BaseUnitSO unitData) 
     {
         int maxMP = unitData.charisma / 5;
         return maxMP;
     }
 
-    public static int maxACCalculation(UnitDataSO unitData)
+    public static int maxACCalculation(BaseUnitSO unitData)
     {
         int maxAC = 2 + unitData.dexterity / 5;
         return maxAC;
     }
 
-    public static float hitRateCalculation(UnitDataSO unitData) 
+    public static float hitRateCalculation(BaseUnitSO unitData) 
     {
         float hitRate = 70 + unitData.wisdom;
         return hitRate;
     }
 
-    public static float criticalHitRateCalculation(UnitDataSO unitData)
+    public static float criticalHitRateCalculation(BaseUnitSO unitData)
     {
         float criticalHitRate = 0.64f * unitData.strength + 0.32f * unitData.wisdom;
         return criticalHitRate;
     }
 
-    public static float dodgeRateCalculation(UnitDataSO unitData)
+    public static float dodgeRateCalculation(BaseUnitSO unitData)
     {
         float dodgeRate = 0.48f * unitData.dexterity + 0.24f * unitData.wisdom;
         return dodgeRate;

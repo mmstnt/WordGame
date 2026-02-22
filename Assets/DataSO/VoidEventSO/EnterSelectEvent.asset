@@ -9,14 +9,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c055d81eb0ab24f4e979d59cf2691ea4, type: 3}
-  m_Name: A
+  m_Script: {fileID: 11500000, guid: 26ee174217bfa7a4fa850a06cb15c455, type: 3}
+  m_Name: EnterSelectEvent
   m_EditorClassIdentifier: 
-  siteCount: 5
-  image: {fileID: 0}
-  unitSite:
-  - {x: -2.5, y: 2}
-  - {x: 0, y: 2}
-  - {x: 2.5, y: 2}
-  - {x: 5, y: 2}
-  - {x: 7.5, y: 2}

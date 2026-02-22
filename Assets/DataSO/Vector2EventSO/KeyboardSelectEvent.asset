@@ -9,14 +9,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c055d81eb0ab24f4e979d59cf2691ea4, type: 3}
-  m_Name: A
+  m_Script: {fileID: 11500000, guid: a029a69b4d8273646b5f4d3bcb2b494e, type: 3}
+  m_Name: KeyboardSelectEvent
   m_EditorClassIdentifier: 
-  siteCount: 5
-  image: {fileID: 0}
-  unitSite:
-  - {x: -2.5, y: 2}
-  - {x: 0, y: 2}
-  - {x: 2.5, y: 2}
-  - {x: 5, y: 2}
-  - {x: 7.5, y: 2}

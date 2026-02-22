@@ -15,7 +15,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Select",
+                    "name": "KeyboardSelect",
                     "type": "Value",
                     "id": "aba52e20-2e67-4a09-abe0-69a81d3ddb2d",
                     "expectedControlType": "Vector2",
@@ -37,6 +37,15 @@
                     "type": "Button",
                     "id": "5595e64a-d052-4839-9353-002931e8ec63",
                     "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "MouseMove",
+                    "type": "PassThrough",
+                    "id": "b3723d03-5f58-4bff-85ec-0ee0de3969b5",
+                    "expectedControlType": "Vector2",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -72,7 +81,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Select",
+                    "action": "KeyboardSelect",
                     "isComposite": true,
                     "isPartOfComposite": false
                 },
@@ -83,7 +92,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Select",
+                    "action": "KeyboardSelect",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -94,7 +103,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Select",
+                    "action": "KeyboardSelect",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -105,7 +114,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Select",
+                    "action": "KeyboardSelect",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -116,7 +125,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Select",
+                    "action": "KeyboardSelect",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -133,12 +142,34 @@
                 },
                 {
                     "name": "",
+                    "id": "381e27ac-c117-4991-b31b-83901eb817eb",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SelectConfirm",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "b78366a0-a252-40e5-bcdc-bff81fcd61b2",
                     "path": "<Keyboard>/escape",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
                     "action": "SelectBack",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "818acc33-cb91-4b72-8649-1ec75942afe8",
+                    "path": "<Mouse>/position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MouseMove",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
