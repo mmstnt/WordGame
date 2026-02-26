@@ -3317,6 +3317,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 11400000, guid: f65f426029897ed408b1b58d96b58352, type: 2}
+        m_TargetAssemblyTypeName: VoidEventSO, Assembly-CSharp
+        m_MethodName: raiseEvent
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1466637973
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3551,22 +3563,18 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   enterSelectEvent: {fileID: 11400000, guid: 83fdf7e5d6df3544f8733b084b444d2b, type: 2}
-  selectBackEvent: {fileID: 11400000, guid: 7fa1dcef391ac9f44ae235421ef88512, type: 2}
-  recordLastButtonEvent: {fileID: 11400000, guid: d25bafdc135c30147818dc4311ca5700, type: 2}
+  WaitActionReactivateEvent: {fileID: 11400000, guid: f6d7bd858709b624fac92476bfbcfdb6, type: 2}
+  unitRoundEndEvent: {fileID: 11400000, guid: f65f426029897ed408b1b58d96b58352, type: 2}
+  setUnitColorEvent: {fileID: 11400000, guid: 28e17d6fa6347c648ad6ce0bfa74a1da, type: 2}
   selectConfirmEvent: {fileID: 11400000, guid: e866fbb132ff5a44a8d2d720aee6d001, type: 2}
   castSkillEvent: {fileID: 11400000, guid: ac7a6450e526eda4b839aae6af244479, type: 2}
-  switchSkillGroupEvent: {fileID: 11400000, guid: 1b5488cb48db18a4185ae03d7ee0e777, type: 2}
   keyboardSelectEvent: {fileID: 11400000, guid: 9885ac9031db0934e97e25894f7e54e6, type: 2}
   mouseMoveEvent: {fileID: 11400000, guid: 0a71666e55d7c4545b56387344f8c1fc, type: 2}
-  playerBattleData: {fileID: 0}
-  enemyUnit: []
-  playerUnit: []
-  battleState: 0
+  battleSystemData: {fileID: 11400000, guid: 44a49382fd6ff2d4fb6aff446c393bf8, type: 2}
   unitGroup: {fileID: 819234677}
   unitHPBarGroup: {fileID: 181020458}
   unitGameObject: {fileID: 1590425536836613328, guid: 2ed47b4c579113947b89fa9db5985a2f, type: 3}
   unitHPBarGameObject: {fileID: 5231973296426514650, guid: 5b68a7405cf3f4943a6d96a6015eb1be, type: 3}
-  skillButtonGameObject: {fileID: 4609581453249934213, guid: fcfd4ad8ebc230c44a449365c92e3775, type: 3}
   actionGroup: {fileID: 60798335}
   skillGroup: {fileID: 898934480}
 --- !u!114 &1654050193
@@ -3581,9 +3589,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cdc664e790999254c8279418b8dbe2cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  castSkillEvent: {fileID: 11400000, guid: ac7a6450e526eda4b839aae6af244479, type: 2}
+  setUnitColorEvent: {fileID: 11400000, guid: 28e17d6fa6347c648ad6ce0bfa74a1da, type: 2}
+  selectBackEvent: {fileID: 11400000, guid: 7fa1dcef391ac9f44ae235421ef88512, type: 2}
   enterSelectEvent: {fileID: 11400000, guid: 83fdf7e5d6df3544f8733b084b444d2b, type: 2}
+  WaitActionReactivateEvent: {fileID: 11400000, guid: f6d7bd858709b624fac92476bfbcfdb6, type: 2}
+  recordLastButtonEvent: {fileID: 11400000, guid: d25bafdc135c30147818dc4311ca5700, type: 2}
+  switchSkillGroupEvent: {fileID: 11400000, guid: 1b5488cb48db18a4185ae03d7ee0e777, type: 2}
+  battleSystemData: {fileID: 11400000, guid: 44a49382fd6ff2d4fb6aff446c393bf8, type: 2}
   actionGroup: {fileID: 60798335}
   skillGroup: {fileID: 898934480}
+  skillButtonGameObject: {fileID: 4609581453249934213, guid: fcfd4ad8ebc230c44a449365c92e3775, type: 3}
 --- !u!1 &1660830320
 GameObject:
   m_ObjectHideFlags: 0

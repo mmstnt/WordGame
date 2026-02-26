@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.PackageManager.UI;
 using UnityEngine;
+using static BattleSystemDataSO;
 
 public static class BattleCalculation
 {
@@ -52,5 +54,23 @@ public static class BattleCalculation
         }
         damage += skillData.modifier;
         return damage;
+    }
+
+
+    public static List<unitActionPoint> unitSpeedCalculation(List<unitActionPoint> unitSpeedList) 
+    {
+        List<unitActionPoint> preUnitActionPointList = unitSpeedList.Select(u => new unitActionPoint
+        {
+            unit = u.unit,
+            actionPoint = u.actionPoint
+        }).ToList();
+
+        for (int i = 0; i < preUnitActionPointList.Count; i++) 
+        {
+            preUnitActionPointList[i].actionPoint += preUnitActionPointList[i].unit.unitData.dexterity;
+        }
+        preUnitActionPointList = preUnitActionPointList.OrderByDescending(u => u.actionPoint).ToList();
+
+        return preUnitActionPointList;
     }
 }
