@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 26bbc675718040b42807492bea1f3914, type: 3}
-  m_Name: Unit00001
+  m_Name: Unit00003
   m_EditorClassIdentifier: 
-  image: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  strength: 10
-  dexterity: 30
-  constitution: 10
-  intelligence: 10
-  wisdom: 10
-  charisma: 10
+  image: {fileID: 0}
+  strength: 0
+  dexterity: 60
+  constitution: 0
+  intelligence: 0
+  wisdom: 0
+  charisma: 0

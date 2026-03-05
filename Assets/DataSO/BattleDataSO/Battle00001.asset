@@ -15,8 +15,8 @@ MonoBehaviour:
   mapData: {fileID: 11400000, guid: 24c434646db389e4380259c5fdb07b07, type: 2}
   enemyUnit:
   - UT00001
-  - UT00001
   - UT00002
+  - UT00003
   - UT00002
   - UT00002
   ourUnit: 

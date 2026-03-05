@@ -16,6 +16,7 @@ public class BattleSystemDataSO : ScriptableObject
     public Unit[] enemyUnit;
     public Unit[] playerUnit;
     public List<unitActionPoint> unitSpeedList;
+    public List<Unit> preUnitSpeedList;
 
     [System.Serializable]
     public class unitActionPoint

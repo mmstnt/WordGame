@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -171,7 +172,22 @@ public class BattleManager : MonoBehaviour
 
     public void onUnitRoundEndEvent() 
     {
-        battleSystemData.unitSpeedList = BattleCalculation.unitSpeedCalculation(battleSystemData.unitSpeedList);
+        //預測單位
+        battleSystemData.preUnitSpeedList.Clear();
+        List<unitActionPoint> preUnitActionPointList = battleSystemData.unitSpeedList.Select(u => new unitActionPoint
+        {
+            unit = u.unit,
+            actionPoint = u.actionPoint
+        }).ToList();
+
+        for (int i = 0; i < 10; i++) 
+        {
+            battleSystemData.preUnitSpeedList.Add(preUnitActionPointList.OrderBy(u => (100 - u.actionPoint) / u.unit.unitData.dexterity).First().unit);
+            BattleCalculation.unitSpeedCalculation(preUnitActionPointList);
+        }
+
+        //下一個單位
+        BattleCalculation.unitSpeedCalculation(battleSystemData.unitSpeedList);
         battleSystemData.curRound += 1;
         Debug.Log(battleSystemData.curRound);
     }

@@ -57,7 +57,7 @@ public static class BattleCalculation
     }
 
 
-    public static List<unitActionPoint> unitSpeedCalculation(List<unitActionPoint> unitSpeedList) 
+    /*public static List<unitActionPoint> AunitSpeedCalculation(List<unitActionPoint> unitSpeedList) 
     {
         List<unitActionPoint> preUnitActionPointList = unitSpeedList.Select(u => new unitActionPoint
         {
@@ -65,12 +65,37 @@ public static class BattleCalculation
             actionPoint = u.actionPoint
         }).ToList();
 
-        for (int i = 0; i < preUnitActionPointList.Count; i++) 
-        {
-            preUnitActionPointList[i].actionPoint += preUnitActionPointList[i].unit.unitData.dexterity;
-        }
-        preUnitActionPointList = preUnitActionPointList.OrderByDescending(u => u.actionPoint).ToList();
+        List<unitActionPoint> unitActionList = new List<unitActionPoint>();
 
-        return preUnitActionPointList;
+        for(int i = 0; i < 10; i++) 
+        {
+            unitActionPoint nextUnit = preUnitActionPointList.OrderBy(u => (100 - u.actionPoint) / u.unit.unitData.dexterity).First();
+            float needTime = (100 - nextUnit.actionPoint) / nextUnit.unit.unitData.dexterity;
+
+            foreach(var unit in preUnitActionPointList) 
+            {
+                unit.actionPoint += unit.unit.unitData.dexterity * needTime;
+            }
+
+            unitActionList.Add(nextUnit);
+            nextUnit.actionPoint -= 100;
+        }
+
+        
+
+        return unitActionList;
+    }*/
+
+    public static void unitSpeedCalculation(List<unitActionPoint> unitSpeedList)
+    {
+        unitActionPoint nextUnit = unitSpeedList.OrderBy(u => (100 - u.actionPoint) / u.unit.unitData.dexterity).First();
+        float needTime = (100 - nextUnit.actionPoint) / nextUnit.unit.unitData.dexterity;
+
+        foreach (var unit in unitSpeedList)
+        {
+            unit.actionPoint += unit.unit.unitData.dexterity * needTime;
+        }
+
+        nextUnit.actionPoint -= 100;
     }
 }
