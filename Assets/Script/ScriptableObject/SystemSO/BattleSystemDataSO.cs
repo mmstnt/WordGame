@@ -13,8 +13,8 @@ public class BattleSystemDataSO : ScriptableObject
     public int curRound;
 
     [Header("³æ¦ì")]
+    public Unit playerUnit;
     public Unit[] enemyUnit;
-    public Unit[] playerUnit;
     public List<unitActionPoint> unitSpeedList;
     public List<Unit> preUnitSpeedList;
 

@@ -44,7 +44,15 @@ public class Unit : MonoBehaviour
         }
         else if(loadUnitData is PlayerDataSO) 
         {
-        
+            unitData = loadUnitData;
+            unitHPBar = loadUnitHPBar;
+
+            unitAttributeCalculation();
+
+            curHP = maxHP;
+            curMP = maxMP;
+
+            unitHPBar.initialize(this);
         }
     }
 
