@@ -141,9 +141,9 @@ public class BattleManager : MonoBehaviour
         battleSystemData.initialize();
         battleSystemData.playerBattleData = playerData;
         //初始化玩家
-        battleSystemData.playerUnit = new Unit();
-        UnitHPBar HPBar = Instantiate(unitHPBarGameObject, unitHPBarGroup).GetComponent<UnitHPBar>();
-        battleSystemData.playerUnit.initialize(playerData, HPBar);
+        //battleSystemData.playerUnit = new Unit();
+        //UnitHPBar HPBar = Instantiate(unitHPBarGameObject, unitHPBarGroup).GetComponent<UnitHPBar>();
+        //battleSystemData.playerUnit.initialize(playerData, HPBar);
 
         //生成敵人單位
         BattleDataSO battleData = DataManager.instance.battleDataList.getData(battleID);
