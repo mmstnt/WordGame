@@ -9,11 +9,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1c901b8f5397b1e4f82e7edb2d4328f3, type: 3}
-  m_Name: SkillDataList
+  m_Script: {fileID: 11500000, guid: a029a69b4d8273646b5f4d3bcb2b494e, type: 3}
+  m_Name: KeyboardSelectUnitEvent
   m_EditorClassIdentifier: 
-  dataList:
-  - id: 1
-    data: {fileID: 11400000, guid: b6b1572dbcab276459579fdccdc1ea06, type: 2}
-  - id: 2
-    data: {fileID: 11400000, guid: 956be4bef7bef2f41a3c4dca8e473abb, type: 2}

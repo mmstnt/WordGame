@@ -9,32 +9,29 @@ public class BattleManager : MonoBehaviour
 {
     public LayerMask unitLayer;
     [Header("廣播")]
+    public VoidEventSO battleUIInitializeEvent;
     public VoidEventSO enterSelectEvent;
     public VoidEventSO WaitActionReactivateEvent;
+    public StringEventSO nextRoundEvent;
 
     [Header("監聽")]
     public VoidEventSO unitRoundEndEvent;
     public VoidEventSO setUnitColorEvent;
-    public StringEventSO selectConfirmEvent;
+    public StringEventSO selectUnitConfirmEvent;
     public StringEventSO castSkillEvent;
-    public Vector2EventSO keyboardSelectEvent;
+    public Vector2EventSO keyboardSelectUnitEvent;
     public Vector2EventSO mouseMoveEvent;
 
     [Header("資料")]
     public BattleSystemDataSO battleSystemData;
 
     [Header("組件")]
+    public Unit playerUnit;
     public Transform unitGroup;
     public Transform unitHPBarGroup;
     public GameObject unitGameObject;
     public GameObject unitHPBarGameObject;
     
-    [Header("UI")]
-    public Transform actionGroup;
-    public Transform skillGroup;
-
-    private SkillDataSO curSkill;
-
     private enum InputMode { Mouse, Keyboard }
     private InputMode inputMode;
 
@@ -46,18 +43,18 @@ public class BattleManager : MonoBehaviour
     private void OnEnable()
     {
         unitRoundEndEvent.onEventRaised += onUnitRoundEndEvent;
-        selectConfirmEvent.onEventRaised += onSelectConfirmEvent;
+        selectUnitConfirmEvent.onEventRaised += onSelectUnitConfirmEvent;
         castSkillEvent.onEventRaised += onCastSkillEvent;
-        keyboardSelectEvent.onEventRaised += onKeyboardSelectEvent;
+        keyboardSelectUnitEvent.onEventRaised += onKeyboardSelectUnitEvent;
         mouseMoveEvent.onEventRaised += onMouseMoveEvent;
     }
 
     private void OnDisable()
     {
         unitRoundEndEvent.onEventRaised -= onUnitRoundEndEvent;
-        selectConfirmEvent.onEventRaised -= onSelectConfirmEvent;
+        selectUnitConfirmEvent.onEventRaised -= onSelectUnitConfirmEvent;
         castSkillEvent.onEventRaised -= onCastSkillEvent;
-        keyboardSelectEvent.onEventRaised -= onKeyboardSelectEvent;
+        keyboardSelectUnitEvent.onEventRaised -= onKeyboardSelectUnitEvent;
         mouseMoveEvent.onEventRaised -= onMouseMoveEvent;
     }
 
@@ -65,7 +62,7 @@ public class BattleManager : MonoBehaviour
     {
         inputMode = InputMode.Mouse;
 
-        if (battleSystemData.battleState == BattleState.Select && inputMode == InputMode.Mouse)
+        if (battleSystemData.battleState == BattleState.SelectUnit && inputMode == InputMode.Mouse)
         {
             mouseSelect(mousePos);
         }
@@ -92,9 +89,13 @@ public class BattleManager : MonoBehaviour
     {
         if (battleSystemData.battleState != BattleState.Ready)
             return;
-        
-        curSkill = DataManager.instance.skillDataList.getData(skillID);
-        battleSystemData.battleState = BattleState.Select;
+
+        SkillDataSO castSkill = DataManager.instance.skillDataList.getData(skillID);
+        if (castSkill.AC > battleSystemData.playerUnit.curAC || castSkill.MP > battleSystemData.playerUnit.curMP) 
+            return;
+
+        battleSystemData.curSelectSkill = DataManager.instance.skillDataList.getData(skillID);
+        battleSystemData.battleState = BattleState.SelectUnit;
 
         enterSelectEvent.onEventRaised();
 
@@ -102,9 +103,9 @@ public class BattleManager : MonoBehaviour
     }
 
 
-    public void onKeyboardSelectEvent(Vector2 dir)
+    public void onKeyboardSelectUnitEvent(Vector2 dir)
     {
-        if (battleSystemData.battleState != BattleState.Select)
+        if (battleSystemData.battleState != BattleState.SelectUnit)
             return;
 
         inputMode = InputMode.Keyboard;
@@ -112,11 +113,12 @@ public class BattleManager : MonoBehaviour
         setUnitColorEvent.raiseEvent();
     }
 
-    public void onSelectConfirmEvent(string inputDevice) 
+    public void onSelectUnitConfirmEvent(string inputDevice) 
     {
-        if (battleSystemData.battleState != BattleState.Select)
+        if (battleSystemData.battleState != BattleState.SelectUnit)
             return;
         
+        //動滑鼠時偵測單位
         if (inputDevice == "Mouse") 
         {
             Vector2 mousePosition = Pointer.current.position.ReadValue();
@@ -127,7 +129,10 @@ public class BattleManager : MonoBehaviour
                 return;
         }
 
-        int damage = BattleCalculation.damageCalculation(curSkill);
+        battleSystemData.playerUnit.curAC -= battleSystemData.curSelectSkill.AC;
+        battleSystemData.playerUnit.curMP -= battleSystemData.curSelectSkill.MP;
+
+        int damage = BattleCalculation.damageCalculation(battleSystemData.curSelectSkill);
         battleSystemData.curSelectUnit.takeDamage(damage);
 
         battleSystemData.battleState = BattleState.Ready;
@@ -141,8 +146,8 @@ public class BattleManager : MonoBehaviour
         battleSystemData.initialize();
         battleSystemData.playerBattleData = playerData;
         //初始化玩家
-        //battleSystemData.playerUnit = new Unit();
-        //UnitHPBar HPBar = Instantiate(unitHPBarGameObject, unitHPBarGroup).GetComponent<UnitHPBar>();
+        battleSystemData.playerUnit = playerUnit;
+        //UnitHPBar HPBar = ;
         //battleSystemData.playerUnit.initialize(playerData, HPBar);
 
         //生成敵人單位
@@ -155,12 +160,14 @@ public class BattleManager : MonoBehaviour
             {
                 battleSystemData.enemyUnit[i] = Instantiate(unitGameObject, battleData.mapData.unitSite[i], Quaternion.identity, unitGroup).GetComponent<Unit>();
                 UnitHPBar unitHPBar = Instantiate(unitHPBarGameObject, unitHPBarGroup).GetComponent<UnitHPBar>();
-
+                //初始化敵人血條
                 battleSystemData.enemyUnit[i].initialize(unitData, unitHPBar);
             }
         }
         //建立單位行動清單
-        Unit[] allUnit = battleSystemData.enemyUnit;
+        List<Unit> allUnit = new List<Unit>();
+        allUnit.Add(battleSystemData.playerUnit);
+        allUnit.AddRange(battleSystemData.enemyUnit);
         foreach (Unit unit in allUnit) 
         {
             unitActionPoint unitAC = new unitActionPoint();
@@ -170,8 +177,7 @@ public class BattleManager : MonoBehaviour
         }
 
         battleSystemData.curSelectUnit = reSetSelectUnit();
-        setUnitColorEvent.raiseEvent();
-        WaitActionReactivateEvent.raiseEvent();
+        battleUIInitializeEvent.raiseEvent();
     }
 
     public void onUnitRoundEndEvent() 
@@ -191,9 +197,29 @@ public class BattleManager : MonoBehaviour
         }
 
         //下一個單位
+        battleSystemData.curActionUnit = battleSystemData.unitSpeedList.OrderBy(u => (100 - u.actionPoint) / u.unit.unitData.dexterity).First().unit;
         BattleCalculation.unitSpeedCalculation(battleSystemData.unitSpeedList);
+        unitAction(battleSystemData.curActionUnit);
+
+        //下一回合
         battleSystemData.curRound += 1;
-        Debug.Log(battleSystemData.curRound);
+    }
+
+    public void unitAction(Unit curActionUnit) 
+    {
+        curActionUnit.curAC = curActionUnit.maxAC;
+
+        if (curActionUnit.unitData is PlayerDataSO playerData) 
+        {
+            nextRoundEvent.raiseEvent("Player");
+        }
+        else if(curActionUnit.unitData is UnitDataSO unitData)
+        {
+            nextRoundEvent.raiseEvent("Unit");
+            Debug.Log("回合結束");
+            onUnitRoundEndEvent();
+        }
+
     }
 
     public Unit reSetSelectUnit() 

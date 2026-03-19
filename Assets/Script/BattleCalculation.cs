@@ -52,7 +52,7 @@ public static class BattleCalculation
         {
             damage += Random.Range(1, skillData.damageDiceSide + 1);
         }
-        damage += skillData.modifier;
+        damage += skillData.damageModifier;
         return damage;
     }
 
@@ -61,6 +61,7 @@ public static class BattleCalculation
         unitActionPoint nextUnit = unitSpeedList.OrderBy(u => (100 - u.actionPoint) / u.unit.unitData.dexterity).First();
         float needTime = (100 - nextUnit.actionPoint) / nextUnit.unit.unitData.dexterity;
 
+        //推進單位速度清單
         foreach (var unit in unitSpeedList)
         {
             unit.actionPoint += unit.unit.unitData.dexterity * needTime;

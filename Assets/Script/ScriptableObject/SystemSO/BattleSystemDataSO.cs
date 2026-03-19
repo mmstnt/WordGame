@@ -9,7 +9,9 @@ public class BattleSystemDataSO : ScriptableObject
 
     [Header("¾Ô°«ª¬ºA")]
     public BattleState battleState;
+    public Unit curActionUnit;
     public Unit curSelectUnit;
+    public SkillDataSO curSelectSkill;
     public int curRound;
 
     [Header("³æ¦ì")]

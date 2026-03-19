@@ -12,7 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 999847e5427f26b4f995de1048ea0a81, type: 3}
   m_Name: Attack
   m_EditorClassIdentifier: 
+  skillName: "\u653B\u64CA"
   damageDiceCount: 1
   damageDiceSide: 6
-  modifier: 4
+  damageModifier: 0
+  AC: 3
+  MP: 0
   effect: []

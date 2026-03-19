@@ -19,12 +19,14 @@ public class Unit : MonoBehaviour
     [Header("²Õ¥ó")]
     public int curHP;
     public int curMP;
+    public int curAC;
 
     private UnitHPBar unitHPBar;
 
     private void OnDestroy()
     {
-        Destroy(unitHPBar.gameObject);
+        if (unitData is UnitDataSO)
+            Destroy(unitHPBar.gameObject);
     }
 
     public void initialize(BaseUnitSO loadUnitData, UnitHPBar loadUnitHPBar) 
@@ -39,6 +41,7 @@ public class Unit : MonoBehaviour
 
             curHP = maxHP;
             curMP = maxMP;
+            curAC = maxAC;
 
             unitHPBar.initialize(this);
         }
@@ -51,8 +54,9 @@ public class Unit : MonoBehaviour
 
             curHP = maxHP;
             curMP = maxMP;
+            curAC = maxAC;
 
-            unitHPBar.initialize(this);
+            unitHPBar.changeHP(this);
         }
     }
 

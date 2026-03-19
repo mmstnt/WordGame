@@ -11,5 +11,5 @@ public enum Attribute
 public enum BattleState 
 {
     Ready,
-    Select
+    SelectUnit
 }

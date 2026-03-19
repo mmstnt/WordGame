@@ -10,50 +10,91 @@ public class BattleUIManager : MonoBehaviour
     public StringEventSO castSkillEvent;
 
     [Header("監聽")]
+    public VoidEventSO battleUIInitializeEvent;
     public VoidEventSO setUnitColorEvent;
     public VoidEventSO selectBackEvent;
     public VoidEventSO enterSelectEvent;
     public VoidEventSO WaitActionReactivateEvent;
     public IntEventSO recordLastButtonEvent;
     public StringEventSO switchSkillGroupEvent;
+    public StringEventSO nextRoundEvent;
 
     [Header("資料")]
     public BattleSystemDataSO battleSystemData;
 
-    [Header("UI")]
+    [Header("UI群組")]
     public Transform actionGroup;
     public Transform skillGroup;
+    public Transform acGrounp;
+    public Transform mpGrounp;
+
+    [Header("玩家UI")]
+    public UnitHPBar playerHPBar;
 
     [Header("組件")]
     public GameObject skillButtonGameObject;
+    public GameObject pointGameObject;
 
     private Transform curUI;
     private int lastActionButtonIndex;
     private int lastSkillButtonIndex;
 
-    private void Awake()
-    {
-        curUI = actionGroup;
-    }
-
     private void OnEnable()
     {
+        battleUIInitializeEvent.onEventRaised += battleUIInitialize;
         setUnitColorEvent.onEventRaised += setUnitColor;
         selectBackEvent.onEventRaised += onSelectBackEvent;
         enterSelectEvent.onEventRaised += onEnterSelect;
         WaitActionReactivateEvent.onEventRaised += onWaitActionReactivateEvent;
+        nextRoundEvent.onEventRaised += onNextRoundEvent;
         recordLastButtonEvent.onEventRaised += onRecordLastButtonEvent;
         switchSkillGroupEvent.onEventRaised += onSwitchSkillGroupEvent;
     }
 
     private void OnDisable()
     {
+        battleUIInitializeEvent.onEventRaised -= battleUIInitialize;
         setUnitColorEvent.onEventRaised -= setUnitColor;
         selectBackEvent.onEventRaised -= onSelectBackEvent;
         enterSelectEvent.onEventRaised -= onEnterSelect;
         WaitActionReactivateEvent.onEventRaised -= onWaitActionReactivateEvent;
+        nextRoundEvent.onEventRaised -= onNextRoundEvent;
         recordLastButtonEvent.onEventRaised -= onRecordLastButtonEvent;
         switchSkillGroupEvent.onEventRaised -= onSwitchSkillGroupEvent;
+    }
+
+    public void battleUIInitialize() 
+    {
+        for (int i = acGrounp.childCount - 1; i >= 0; i--) 
+        {
+            GameObject acGameObject = acGrounp.GetChild(i).gameObject;
+            acGameObject.transform.SetParent(null);
+            Destroy(acGameObject);
+        }
+
+        for (int i = mpGrounp.childCount - 1; i >= 0; i--) 
+        {
+            GameObject mpGameObject = mpGrounp.GetChild(i).gameObject;
+            mpGameObject.transform.SetParent(null);
+            Destroy(mpGameObject);
+        }
+
+        curUI = actionGroup;
+        //初始化玩家血條
+        battleSystemData.playerUnit.initialize(battleSystemData.playerBattleData, playerHPBar);
+        for(int i = 0; i < battleSystemData.playerUnit.maxAC; i++) 
+        {
+            GameObject acPoint = Instantiate(pointGameObject, acGrounp);
+            acPoint.GetComponent<Image>().sprite = DataManager.instance.uiImageDataList.getData("1");
+        }
+        for (int i = 0; i < battleSystemData.playerUnit.maxMP; i++)
+        {
+            GameObject mpPoint = Instantiate(pointGameObject, mpGrounp);
+            mpPoint.GetComponent<Image>().sprite = DataManager.instance.uiImageDataList.getData("3");
+        }
+
+        setUnitColor();
+        onWaitActionReactivateEvent();
     }
 
     public void onEnterSelect()
@@ -64,7 +105,7 @@ public class BattleUIManager : MonoBehaviour
 
     public void onSelectBackEvent()
     {
-        if (battleSystemData.battleState == BattleState.Select)
+        if (battleSystemData.battleState == BattleState.SelectUnit)
         {
             battleSystemData.battleState = BattleState.Ready;
             setUnitColorEvent.raiseEvent();
@@ -78,8 +119,25 @@ public class BattleUIManager : MonoBehaviour
         StartCoroutine(waitActionReactivate());
     }
 
-    public void onWaitActionReactivateEvent() 
-    { 
+    public void onNextRoundEvent(string unitKind) 
+    {
+        //看誰的回合
+        switch (unitKind) { 
+            case "Player":
+                curUI.gameObject.SetActive(false);
+                curUI = actionGroup;
+                lastActionButtonIndex = 0;
+                onWaitActionReactivateEvent();
+                break;
+            case "Unit":
+                curUI.gameObject.SetActive(false);
+                break;
+        }
+    }
+
+    public void onWaitActionReactivateEvent()
+    {
+        updateUI();
         StartCoroutine(waitActionReactivate()); 
     }
 
@@ -180,9 +238,38 @@ public class BattleUIManager : MonoBehaviour
         {
             unit.GetComponent<SpriteRenderer>().color = new Color(0.75f, 0.75f, 0.75f);
         }
-        if (battleSystemData.battleState == BattleState.Select && battleSystemData.curSelectUnit != null)
+        if (battleSystemData.battleState == BattleState.SelectUnit && battleSystemData.curSelectUnit != null)
         {
             battleSystemData.curSelectUnit.GetComponent<SpriteRenderer>().color = Color.white;
+        }
+    }
+
+    public void updateUI() 
+    {
+        for(int i = 0; i < acGrounp.childCount; i++) 
+        {
+            if (i < battleSystemData.playerUnit.curAC) 
+            {
+                
+                acGrounp.GetChild(i).GetComponent<Image>().sprite = DataManager.instance.uiImageDataList.getData("1");
+            }
+            else
+            {
+                
+                acGrounp.GetChild(i).GetComponent<Image>().sprite = DataManager.instance.uiImageDataList.getData("2");
+            }
+        }
+
+        for (int i = 0; i < mpGrounp.childCount; i++)
+        {
+            if (i < battleSystemData.playerUnit.curMP)
+            {
+                mpGrounp.GetChild(i).GetComponent<Image>().sprite = DataManager.instance.uiImageDataList.getData("3");
+            }
+            else
+            {
+                mpGrounp.GetChild(i).GetComponent<Image>().sprite = DataManager.instance.uiImageDataList.getData("4");
+            }
         }
     }
 }

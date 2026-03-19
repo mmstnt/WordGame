@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: PlayerData
   m_EditorClassIdentifier: 
   image: {fileID: 0}
-  strength: 0
-  dexterity: 0
-  constitution: 0
-  intelligence: 0
-  wisdom: 0
-  charisma: 0
+  strength: 50
+  dexterity: 50
+  constitution: 50
+  intelligence: 50
+  wisdom: 50
+  charisma: 50
   curMartial:
   - 1
   - 1

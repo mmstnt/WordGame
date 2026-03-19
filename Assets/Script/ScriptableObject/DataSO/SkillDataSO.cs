@@ -8,7 +8,10 @@ public class SkillDataSO : ScriptableObject
     public string skillName;
     public int damageDiceCount;
     public int damageDiceSide;
-    public int modifier;
+    public int damageModifier;
+
+    public int AC;
+    public int MP;
 
     public string[] effect;
 }
