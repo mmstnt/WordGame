@@ -1,6 +1,6 @@
 using System.Collections;
-using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
@@ -13,11 +13,13 @@ public class BattleUIManager : MonoBehaviour
     public VoidEventSO battleUIInitializeEvent;
     public VoidEventSO setUnitColorEvent;
     public VoidEventSO selectBackEvent;
-    public VoidEventSO enterSelectEvent;
-    public VoidEventSO WaitActionReactivateEvent;
+    public VoidEventSO enterSelectUnitEvent;
+    public VoidEventSO waitActionReactivateEvent;
+    public VoidEventSO battleButtonUpdataEvent;
     public IntEventSO recordLastButtonEvent;
     public StringEventSO switchSkillGroupEvent;
     public StringEventSO nextRoundEvent;
+    public SkillEffectEventSO skillEffectEvent;
 
     [Header("資料")]
     public BattleSystemDataSO battleSystemData;
@@ -27,6 +29,10 @@ public class BattleUIManager : MonoBehaviour
     public Transform skillGroup;
     public Transform acGrounp;
     public Transform mpGrounp;
+    public Transform preACGrounp;
+    public Transform preMPGrounp;
+    public Transform actionOrderGroup;
+    public Transform effectGroup;
 
     [Header("玩家UI")]
     public UnitHPBar playerHPBar;
@@ -34,6 +40,7 @@ public class BattleUIManager : MonoBehaviour
     [Header("組件")]
     public GameObject skillButtonGameObject;
     public GameObject pointGameObject;
+    public GameObject characterSpeedBoxGameObject;
 
     private Transform curUI;
     private int lastActionButtonIndex;
@@ -44,11 +51,13 @@ public class BattleUIManager : MonoBehaviour
         battleUIInitializeEvent.onEventRaised += battleUIInitialize;
         setUnitColorEvent.onEventRaised += setUnitColor;
         selectBackEvent.onEventRaised += onSelectBackEvent;
-        enterSelectEvent.onEventRaised += onEnterSelect;
-        WaitActionReactivateEvent.onEventRaised += onWaitActionReactivateEvent;
+        enterSelectUnitEvent.onEventRaised += onEnterSelectUnitEvent;
+        waitActionReactivateEvent.onEventRaised += onWaitActionReactivateEvent;
+        battleButtonUpdataEvent.onEventRaised += onBattleButtonUpdataEvent;
         nextRoundEvent.onEventRaised += onNextRoundEvent;
         recordLastButtonEvent.onEventRaised += onRecordLastButtonEvent;
         switchSkillGroupEvent.onEventRaised += onSwitchSkillGroupEvent;
+        skillEffectEvent.onEventRaised += onSkillEffectEvent;
     }
 
     private void OnDisable()
@@ -56,28 +65,19 @@ public class BattleUIManager : MonoBehaviour
         battleUIInitializeEvent.onEventRaised -= battleUIInitialize;
         setUnitColorEvent.onEventRaised -= setUnitColor;
         selectBackEvent.onEventRaised -= onSelectBackEvent;
-        enterSelectEvent.onEventRaised -= onEnterSelect;
-        WaitActionReactivateEvent.onEventRaised -= onWaitActionReactivateEvent;
+        enterSelectUnitEvent.onEventRaised -= onEnterSelectUnitEvent;
+        waitActionReactivateEvent.onEventRaised -= onWaitActionReactivateEvent;
+        battleButtonUpdataEvent.onEventRaised -= onBattleButtonUpdataEvent;
         nextRoundEvent.onEventRaised -= onNextRoundEvent;
         recordLastButtonEvent.onEventRaised -= onRecordLastButtonEvent;
         switchSkillGroupEvent.onEventRaised -= onSwitchSkillGroupEvent;
+        skillEffectEvent.onEventRaised -= onSkillEffectEvent;
     }
 
     public void battleUIInitialize() 
     {
-        for (int i = acGrounp.childCount - 1; i >= 0; i--) 
-        {
-            GameObject acGameObject = acGrounp.GetChild(i).gameObject;
-            acGameObject.transform.SetParent(null);
-            Destroy(acGameObject);
-        }
-
-        for (int i = mpGrounp.childCount - 1; i >= 0; i--) 
-        {
-            GameObject mpGameObject = mpGrounp.GetChild(i).gameObject;
-            mpGameObject.transform.SetParent(null);
-            Destroy(mpGameObject);
-        }
+        clearUIGrounp(acGrounp);
+        clearUIGrounp(mpGrounp);
 
         curUI = actionGroup;
         //初始化玩家血條
@@ -94,10 +94,9 @@ public class BattleUIManager : MonoBehaviour
         }
 
         setUnitColor();
-        onWaitActionReactivateEvent();
     }
 
-    public void onEnterSelect()
+    public void onEnterSelectUnitEvent()
     {
         //選擇單位模式
         curUI.gameObject.SetActive(false);
@@ -131,41 +130,74 @@ public class BattleUIManager : MonoBehaviour
                 break;
             case "Unit":
                 curUI.gameObject.SetActive(false);
+
+                onWaitActionReactivateEvent();
                 break;
         }
     }
 
-    public void onWaitActionReactivateEvent()
+    public void onBattleButtonUpdataEvent()
     {
         updateUI();
+    }
+
+    public void onWaitActionReactivateEvent()
+    {
         StartCoroutine(waitActionReactivate()); 
     }
 
     public IEnumerator waitActionReactivate()
     {
-        curUI.GetComponent<CanvasGroup>().interactable = false;
-        curUI.gameObject.SetActive(true);
-
-        yield return new WaitForEndOfFrame();
-
-        curUI.GetComponent<CanvasGroup>().interactable = true;
-
-        int index = 0;
-        if (curUI == actionGroup)
-            index = lastActionButtonIndex;
-        else if (curUI == skillGroup)
-            index = lastSkillButtonIndex;
-
-        if (curUI.childCount > index)
+        if(battleSystemData.curActionUnit.unitData is PlayerDataSO) 
         {
-            //獲取上個按鈕
-            EventSystem.current.SetSelectedGameObject(curUI.transform.GetChild(index).gameObject);
+            curUI.GetComponent<CanvasGroup>().interactable = false;
+            curUI.gameObject.SetActive(true);
+
+            yield return new WaitForEndOfFrame();
+
+            curUI.GetComponent<CanvasGroup>().interactable = true;
+
+            //判斷是哪個UI
+            int index = 0;
+            if (curUI == actionGroup)
+                index = lastActionButtonIndex;
+            else if (curUI == skillGroup)
+                index = lastSkillButtonIndex;
+
+            if (curUI.childCount > index)
+            {
+                //獲取上個按鈕
+                EventSystem.current.SetSelectedGameObject(curUI.transform.GetChild(index).gameObject);
+                GameObject curSkillButton = EventSystem.current?.currentSelectedGameObject;
+            }
+            else if (curUI.childCount > 0)
+            {
+                //獲取UI子物件第一個按鈕
+                EventSystem.current.SetSelectedGameObject(curUI.transform.GetChild(0).gameObject);
+            }
         }
-        else if (curUI.childCount > 0)
-        {
-            //獲取UI子物件第一個按鈕
-            EventSystem.current.SetSelectedGameObject(curUI.transform.GetChild(0).gameObject);
-        }
+
+        updateUI();
+    }
+
+    public void onSkillEffectEvent(SkillDataSO skill, Vector3 pos, UnityAction onComplete) 
+    {
+        StartCoroutine(SkillEffectCoroutine(skill, pos, onComplete));
+    }
+
+    public IEnumerator SkillEffectCoroutine(SkillDataSO skill, Vector3 pos, UnityAction onComplete)
+    {
+        GameObject skillEffect = Instantiate(skill.skillAni, pos, Quaternion.identity, effectGroup);
+
+        //計算動畫播放時間
+        float duration = skillEffect.GetComponent<EffectAnimator>().CalculateDuration();
+
+        yield return new WaitForSeconds(duration);
+
+        Destroy(skillEffect);
+
+        //讓戰鬥管理器解除等待
+        onComplete?.Invoke();
     }
 
     public void onSwitchSkillGroupEvent(string skillType)
@@ -198,6 +230,7 @@ public class BattleUIManager : MonoBehaviour
 
     public void createSkillButton(string[] skillList)
     {
+        //創建技能按鈕
         for (int i = 0; i < skillList.Length; i++)
         {
             int index = i;
@@ -208,7 +241,8 @@ public class BattleUIManager : MonoBehaviour
 
             GameObject skillButton = Instantiate(skillButtonGameObject, skillGroup);
             skillButton.GetComponent<RectTransform>().anchoredPosition = site;
-            skillButton.GetComponentInChildren<TMP_Text>().text = DataManager.instance.skillDataList.getData(skillID).skillName;
+            skillButton.GetComponent<BattleButton>().battleButtonUpdataEvent = battleButtonUpdataEvent;
+            skillButton.GetComponent<BattleSkillButton>().initialize(skillID);
             skillButton.GetComponent<Button>().onClick.AddListener
                 (
                 delegate
@@ -236,6 +270,7 @@ public class BattleUIManager : MonoBehaviour
     {
         foreach (var unit in battleSystemData.enemyUnit)
         {
+            if(unit!=null)
             unit.GetComponent<SpriteRenderer>().color = new Color(0.75f, 0.75f, 0.75f);
         }
         if (battleSystemData.battleState == BattleState.SelectUnit && battleSystemData.curSelectUnit != null)
@@ -246,29 +281,73 @@ public class BattleUIManager : MonoBehaviour
 
     public void updateUI() 
     {
-        for(int i = 0; i < acGrounp.childCount; i++) 
+        updataUIPoint(acGrounp, battleSystemData.playerUnit.curAC, "1", "2");
+        updataUIPoint(mpGrounp, battleSystemData.playerUnit.curMP, "4", "5");
+
+        preUI();
+        actionOrderUI();
+    }
+
+    public void preUI() 
+    {
+        clearUIGrounp(preACGrounp);
+        clearUIGrounp(preMPGrounp);
+
+        GameObject curSkillButton = EventSystem.current?.currentSelectedGameObject;
+        if (curSkillButton != null && curSkillButton.TryGetComponent<BattleSkillButton>(out BattleSkillButton curSelectSkill)) 
         {
-            if (i < battleSystemData.playerUnit.curAC) 
+            int needAC = DataManager.instance.skillDataList.getData(curSelectSkill.skillID).AC;
+            int needMP = DataManager.instance.skillDataList.getData(curSelectSkill.skillID).MP;
+            updataUIPrePoint(preACGrounp, battleSystemData.playerUnit.curAC, needAC, "3");
+            updataUIPrePoint(preMPGrounp, battleSystemData.playerUnit.curMP, needMP, "6");
+        }
+    }
+
+    public void actionOrderUI() 
+    {
+        clearUIGrounp(actionOrderGroup);
+
+        for(int i= battleSystemData.preUnitSpeedList.Count - 1; i >= 0; i--) 
+        {
+            GameObject characterSpeedBox = Instantiate(characterSpeedBoxGameObject, actionOrderGroup);
+            characterSpeedBox.GetComponent<Image>().sprite = battleSystemData.preUnitSpeedList[i].unitData.image;
+        }
+    }
+
+    private void clearUIGrounp(Transform UIGrounp) 
+    {
+        for (int i = UIGrounp.childCount - 1; i >= 0; i--)
+        {
+            GameObject UIGameObject = UIGrounp.GetChild(i).gameObject;
+            UIGameObject.transform.SetParent(null);
+            Destroy(UIGameObject);
+        }
+    }
+
+    private void updataUIPoint(Transform UIGrounp, int curPoint, string pointImageID, string nullpointImageID) 
+    {
+        for (int i = 0; i < UIGrounp.childCount; i++)
+        {
+            if (i < curPoint)
             {
-                
-                acGrounp.GetChild(i).GetComponent<Image>().sprite = DataManager.instance.uiImageDataList.getData("1");
+                UIGrounp.GetChild(i).GetComponent<Image>().sprite = DataManager.instance.uiImageDataList.getData(pointImageID);
             }
             else
             {
-                
-                acGrounp.GetChild(i).GetComponent<Image>().sprite = DataManager.instance.uiImageDataList.getData("2");
+                UIGrounp.GetChild(i).GetComponent<Image>().sprite = DataManager.instance.uiImageDataList.getData(nullpointImageID);
             }
         }
+    }
 
-        for (int i = 0; i < mpGrounp.childCount; i++)
+    private void updataUIPrePoint(Transform UIGrounp, int curPoint, int needPoint, string pointImageID)
+    {
+        for (int i = 0; i < needPoint; i++)
         {
-            if (i < battleSystemData.playerUnit.curMP)
+            Image prePointImage = Instantiate(pointGameObject, UIGrounp).GetComponent<Image>();
+            prePointImage.sprite = DataManager.instance.uiImageDataList.getData(pointImageID);
+            if (curPoint < needPoint && i >= curPoint)  
             {
-                mpGrounp.GetChild(i).GetComponent<Image>().sprite = DataManager.instance.uiImageDataList.getData("3");
-            }
-            else
-            {
-                mpGrounp.GetChild(i).GetComponent<Image>().sprite = DataManager.instance.uiImageDataList.getData("4");
+                prePointImage.color = new Color(0.5f, 0f, 0f);
             }
         }
     }

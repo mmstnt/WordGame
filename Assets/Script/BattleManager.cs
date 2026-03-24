@@ -1,24 +1,30 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using static BattleSystemDataSO;
+using static UnityEngine.GraphicsBuffer;
+using Random =UnityEngine.Random;
 
 public class BattleManager : MonoBehaviour
 {
     public LayerMask unitLayer;
     [Header("廣播")]
     public VoidEventSO battleUIInitializeEvent;
-    public VoidEventSO enterSelectEvent;
-    public VoidEventSO WaitActionReactivateEvent;
+    public VoidEventSO enterSelectUnitEvent;
+    public VoidEventSO waitActionReactivateEvent;
     public StringEventSO nextRoundEvent;
+    public SkillEffectEventSO skillEffectEvent;
 
     [Header("監聽")]
     public VoidEventSO unitRoundEndEvent;
     public VoidEventSO setUnitColorEvent;
     public StringEventSO selectUnitConfirmEvent;
-    public StringEventSO castSkillEvent;
+    public StringEventSO chooseCastSkillEvent;
     public Vector2EventSO keyboardSelectUnitEvent;
     public Vector2EventSO mouseMoveEvent;
 
@@ -44,7 +50,7 @@ public class BattleManager : MonoBehaviour
     {
         unitRoundEndEvent.onEventRaised += onUnitRoundEndEvent;
         selectUnitConfirmEvent.onEventRaised += onSelectUnitConfirmEvent;
-        castSkillEvent.onEventRaised += onCastSkillEvent;
+        chooseCastSkillEvent.onEventRaised += onChooseCastSkillEvent;
         keyboardSelectUnitEvent.onEventRaised += onKeyboardSelectUnitEvent;
         mouseMoveEvent.onEventRaised += onMouseMoveEvent;
     }
@@ -53,7 +59,7 @@ public class BattleManager : MonoBehaviour
     {
         unitRoundEndEvent.onEventRaised -= onUnitRoundEndEvent;
         selectUnitConfirmEvent.onEventRaised -= onSelectUnitConfirmEvent;
-        castSkillEvent.onEventRaised -= onCastSkillEvent;
+        chooseCastSkillEvent.onEventRaised -= onChooseCastSkillEvent;
         keyboardSelectUnitEvent.onEventRaised -= onKeyboardSelectUnitEvent;
         mouseMoveEvent.onEventRaised -= onMouseMoveEvent;
     }
@@ -64,11 +70,11 @@ public class BattleManager : MonoBehaviour
 
         if (battleSystemData.battleState == BattleState.SelectUnit && inputMode == InputMode.Mouse)
         {
-            mouseSelect(mousePos);
+            mouseSelectUnit(mousePos);
         }
     }
 
-    private void mouseSelect(Vector2 mousePos) 
+    private void mouseSelectUnit(Vector2 mousePos) 
     {
         Vector2 worldPos = Camera.main.ScreenToWorldPoint(mousePos);
         RaycastHit2D hit = Physics2D.Raycast(worldPos, Vector2.zero, 0f, unitLayer);
@@ -85,11 +91,12 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    public void onCastSkillEvent(string skillID)
+    public void onChooseCastSkillEvent(string skillID)
     {
         if (battleSystemData.battleState != BattleState.Ready)
             return;
 
+        //判斷選擇的技能能否施放
         SkillDataSO castSkill = DataManager.instance.skillDataList.getData(skillID);
         if (castSkill.AC > battleSystemData.playerUnit.curAC || castSkill.MP > battleSystemData.playerUnit.curMP) 
             return;
@@ -97,11 +104,10 @@ public class BattleManager : MonoBehaviour
         battleSystemData.curSelectSkill = DataManager.instance.skillDataList.getData(skillID);
         battleSystemData.battleState = BattleState.SelectUnit;
 
-        enterSelectEvent.onEventRaised();
+        enterSelectUnitEvent.onEventRaised();
 
         setUnitColorEvent.raiseEvent();
     }
-
 
     public void onKeyboardSelectUnitEvent(Vector2 dir)
     {
@@ -129,17 +135,42 @@ public class BattleManager : MonoBehaviour
                 return;
         }
 
-        battleSystemData.playerUnit.curAC -= battleSystemData.curSelectSkill.AC;
-        battleSystemData.playerUnit.curMP -= battleSystemData.curSelectSkill.MP;
-
-        int damage = BattleCalculation.damageCalculation(battleSystemData.curSelectSkill);
-        battleSystemData.curSelectUnit.takeDamage(damage);
+        //施放技能
+        StartCoroutine(castSkill(battleSystemData.playerUnit, battleSystemData.curSelectUnit, battleSystemData.curSelectSkill));
 
         battleSystemData.battleState = BattleState.Ready;
         setUnitColorEvent.raiseEvent();
-        WaitActionReactivateEvent.raiseEvent();
+        waitActionReactivateEvent.raiseEvent();
     }
 
+    public IEnumerator castSkill(Unit caster, Unit target, SkillDataSO skill)
+    {
+        if (skill.AC > caster.curAC || skill.MP > caster.curMP)
+            yield break;
+
+        //扣除技能消耗
+        caster.curAC -= skill.AC;
+        caster.curMP -= skill.MP;
+
+        //播放動畫
+        bool isAniFinish = false;
+        skillEffectEvent.raiseEvent(skill, target.transform.position, () =>
+        {
+            isAniFinish = true;
+        }
+        );
+
+        yield return new WaitUntil(() => isAniFinish);
+
+        //造成傷害
+        int damage = BattleCalculation.damageCalculation(skill);
+        target.takeDamage(damage);
+        preUnitSpeed();
+
+        yield return StartCoroutine(target.hurtFlash(0.1f));
+
+        Debug.Log(damage+skill.name);
+    }
 
     public void battleInitialize(string battleID, PlayerDataSO playerData) 
     {
@@ -147,8 +178,6 @@ public class BattleManager : MonoBehaviour
         battleSystemData.playerBattleData = playerData;
         //初始化玩家
         battleSystemData.playerUnit = playerUnit;
-        //UnitHPBar HPBar = ;
-        //battleSystemData.playerUnit.initialize(playerData, HPBar);
 
         //生成敵人單位
         BattleDataSO battleData = DataManager.instance.battleDataList.getData(battleID);
@@ -178,11 +207,29 @@ public class BattleManager : MonoBehaviour
 
         battleSystemData.curSelectUnit = reSetSelectUnit();
         battleUIInitializeEvent.raiseEvent();
+        
+        onUnitRoundEndEvent();
     }
 
     public void onUnitRoundEndEvent() 
     {
+        //移除所有空單位
+        battleSystemData.unitSpeedList.RemoveAll(u => u.unit == null);
         //預測單位
+        preUnitSpeed();
+
+        //下一個單位
+        battleSystemData.curActionUnit = battleSystemData.unitSpeedList.OrderBy(u => (100 - u.actionPoint) / u.unit.unitData.dexterity).First().unit;
+        BattleCalculation.unitSpeedCalculation(battleSystemData.unitSpeedList);
+        StartCoroutine(unitAction(battleSystemData.curActionUnit));
+
+        //下一回合
+        battleSystemData.curRound += 1;
+    }
+
+    public void preUnitSpeed() 
+    {
+
         battleSystemData.preUnitSpeedList.Clear();
         List<unitActionPoint> preUnitActionPointList = battleSystemData.unitSpeedList.Select(u => new unitActionPoint
         {
@@ -190,22 +237,14 @@ public class BattleManager : MonoBehaviour
             actionPoint = u.actionPoint
         }).ToList();
 
-        for (int i = 0; i < 10; i++) 
+        for (int i = 0; i < 8; i++)
         {
             battleSystemData.preUnitSpeedList.Add(preUnitActionPointList.OrderBy(u => (100 - u.actionPoint) / u.unit.unitData.dexterity).First().unit);
             BattleCalculation.unitSpeedCalculation(preUnitActionPointList);
         }
-
-        //下一個單位
-        battleSystemData.curActionUnit = battleSystemData.unitSpeedList.OrderBy(u => (100 - u.actionPoint) / u.unit.unitData.dexterity).First().unit;
-        BattleCalculation.unitSpeedCalculation(battleSystemData.unitSpeedList);
-        unitAction(battleSystemData.curActionUnit);
-
-        //下一回合
-        battleSystemData.curRound += 1;
     }
 
-    public void unitAction(Unit curActionUnit) 
+    public IEnumerator unitAction(Unit curActionUnit) 
     {
         curActionUnit.curAC = curActionUnit.maxAC;
 
@@ -216,10 +255,64 @@ public class BattleManager : MonoBehaviour
         else if(curActionUnit.unitData is UnitDataSO unitData)
         {
             nextRoundEvent.raiseEvent("Unit");
+            //抽取單位技能建立施放清單
+            List<string> unitCastSkillList = createUnitCastSkillList(curActionUnit);
+            foreach(string castSkillID in unitCastSkillList) 
+            {
+                Unit target = battleSystemData.playerUnit;
+                SkillDataSO skill = DataManager.instance.skillDataList.getData(castSkillID);
+                yield return StartCoroutine(castSkill(curActionUnit, target, skill));
+            }
             Debug.Log("回合結束");
             onUnitRoundEndEvent();
         }
+    }
 
+    public List<string> createUnitCastSkillList(Unit curUnit)
+    {
+        List<string> unitActionSkillList = new List<string>();
+        int preAC = curUnit.curAC;
+        int preMP = curUnit.curMP;
+
+        //抽取單位施放的技能
+        string castSkill = drawCastSkill(curUnit, preAC, preMP);
+
+        while (castSkill != null) 
+        {
+            //添加抽取技能至行動清單
+            unitActionSkillList.Add(castSkill);
+
+            //更新單位狀態
+            preAC -= DataManager.instance.skillDataList.getData(castSkill).AC;
+            preMP -= DataManager.instance.skillDataList.getData(castSkill).MP;
+
+            //再次抽取技能
+            castSkill = drawCastSkill(curUnit, preAC, preMP);
+        }
+
+        return unitActionSkillList;
+    }
+
+    public string drawCastSkill(Unit curUnit, int preAC, int preMP)
+    {
+        //轉為單位數據
+        UnitDataSO unitData = curUnit.unitData as UnitDataSO;
+
+        //取得目前可施放的技能清單
+        string[] drawSkillList = unitData.unitSkill.Where
+            (s =>
+            (DataManager.instance.skillDataList.getData(s).AC) <= preAC &&
+            (DataManager.instance.skillDataList.getData(s).MP) <= preMP
+            ).ToArray();
+
+        if (drawSkillList.Length <= 0)
+            return null;
+
+        //抽取施放技能
+        int index = Random.Range(0, drawSkillList.Length);
+        string skillID = drawSkillList[index];
+        
+        return skillID;
     }
 
     public Unit reSetSelectUnit() 

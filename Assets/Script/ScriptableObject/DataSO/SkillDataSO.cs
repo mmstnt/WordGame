@@ -14,4 +14,6 @@ public class SkillDataSO : ScriptableObject
     public int MP;
 
     public string[] effect;
+
+    public GameObject skillAni;
 }

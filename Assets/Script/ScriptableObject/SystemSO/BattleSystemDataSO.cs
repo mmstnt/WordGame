@@ -31,9 +31,13 @@ public class BattleSystemDataSO : ScriptableObject
     {
         playerBattleData = null;
         battleState = BattleState.Ready;
+        curActionUnit = null;
+        curSelectUnit = null;
+        curSelectSkill = null;
         curRound = 1;
-        enemyUnit = null;
         playerUnit = null;
+        enemyUnit = null;
         unitSpeedList = new List<unitActionPoint>();
+        preUnitSpeedList = new List<Unit>();
     }
 }

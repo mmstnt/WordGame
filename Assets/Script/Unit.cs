@@ -1,6 +1,6 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Unit : MonoBehaviour
 {
@@ -75,7 +75,36 @@ public class Unit : MonoBehaviour
     {
         curHP -= damage;
 
-        if (curHP < 0) curHP = 0;
+        if (curHP < 0)
+        {
+            curHP = 0;
+            Destroy(this.gameObject);
+        }
         unitHPBar.changeHP(this);
+    }
+
+    public IEnumerator hurtFlash(float duration)
+    {
+        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+        Image image = GetComponent<Image>();
+
+        //預設為原始顏色
+        Color originalColor = Color.white;
+
+        //兩組件都沒有就直接結束
+        if (spriteRenderer != null) originalColor = spriteRenderer.color;
+        else if (image != null) originalColor = image.color;
+        else yield break;
+
+        //變紅
+        if (spriteRenderer != null) spriteRenderer.color = Color.red;
+        if (image != null) image.color = Color.red;
+        
+        //等待
+        yield return new WaitForSeconds(duration);
+
+        //還原顏色
+        if (spriteRenderer != null) spriteRenderer.color = originalColor;
+        if (image != null) image.color = originalColor;
     }
 }
