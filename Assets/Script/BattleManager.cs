@@ -17,6 +17,7 @@ public class BattleManager : MonoBehaviour
     public VoidEventSO battleUIInitializeEvent;
     public VoidEventSO enterSelectUnitEvent;
     public VoidEventSO waitActionReactivateEvent;
+    public VoidEventSO battleResultEvent;
     public StringEventSO nextRoundEvent;
     public SkillEffectEventSO skillEffectEvent;
 
@@ -98,14 +99,16 @@ public class BattleManager : MonoBehaviour
 
         //判斷選擇的技能能否施放
         SkillDataSO castSkill = DataManager.instance.skillDataList.getData(skillID);
-        if (castSkill.AC > battleSystemData.playerUnit.curAC || castSkill.MP > battleSystemData.playerUnit.curMP) 
+        if (castSkill.AC > battleSystemData.playerUnit.curAC || castSkill.MP > battleSystemData.playerUnit.curMP)
             return;
 
         battleSystemData.curSelectSkill = DataManager.instance.skillDataList.getData(skillID);
         battleSystemData.battleState = BattleState.SelectUnit;
 
-        enterSelectUnitEvent.onEventRaised();
+        if (battleSystemData.curSelectUnit == null)
+            battleSystemData.curSelectUnit = reSetSelectUnit();
 
+        enterSelectUnitEvent.onEventRaised();
         setUnitColorEvent.raiseEvent();
     }
 
@@ -165,9 +168,38 @@ public class BattleManager : MonoBehaviour
         //造成傷害
         int damage = BattleCalculation.damageCalculation(skill);
         target.takeDamage(damage);
-        preUnitSpeed();
 
         yield return StartCoroutine(target.hurtFlash(0.1f));
+
+        //判斷單位死亡
+        if (target.isDead) 
+        {
+            target.die();
+            if (battleSystemData.enemyUnit.All(u => u == null || u.isDead))
+            {
+                //廣播給UI管理器播放戰鬥結束動畫(還沒做)
+                battleResultEvent.raiseEvent();
+                //測試結算
+                GameEventManager.instance.endBattle(true);
+                battleSystemData.battleState = BattleState.End;
+                StopAllCoroutines();
+                Debug.Log("結算");
+                yield break;
+            }
+            else if (battleSystemData.playerUnit.isDead) 
+            {
+
+                GameEventManager.instance.endBattle(false);
+
+                battleSystemData.battleState = BattleState.End; 
+                StopAllCoroutines();
+                Debug.Log("結算");
+                yield break;
+            }
+        }
+
+        preUnitSpeed();
+        waitActionReactivateEvent.raiseEvent() ;
 
         Debug.Log(damage+skill.name);
     }
@@ -214,13 +246,16 @@ public class BattleManager : MonoBehaviour
     public void onUnitRoundEndEvent() 
     {
         //移除所有空單位
-        battleSystemData.unitSpeedList.RemoveAll(u => u.unit == null);
-        //預測單位
-        preUnitSpeed();
+        battleSystemData.unitSpeedList.RemoveAll(u => u.unit == null || u.unit.isDead);
 
         //下一個單位
         battleSystemData.curActionUnit = battleSystemData.unitSpeedList.OrderBy(u => (100 - u.actionPoint) / u.unit.unitData.dexterity).First().unit;
         BattleCalculation.unitSpeedCalculation(battleSystemData.unitSpeedList);
+        
+        //預測單位
+        preUnitSpeed();
+
+        //單位行動
         StartCoroutine(unitAction(battleSystemData.curActionUnit));
 
         //下一回合
@@ -229,9 +264,11 @@ public class BattleManager : MonoBehaviour
 
     public void preUnitSpeed() 
     {
-
         battleSystemData.preUnitSpeedList.Clear();
-        List<unitActionPoint> preUnitActionPointList = battleSystemData.unitSpeedList.Select(u => new unitActionPoint
+
+        List<unitActionPoint> preUnitActionPointList = battleSystemData.unitSpeedList
+        .Where(u => u.unit != null && !u.unit.isDead)
+        .Select(u => new unitActionPoint
         {
             unit = u.unit,
             actionPoint = u.actionPoint
@@ -239,8 +276,15 @@ public class BattleManager : MonoBehaviour
 
         for (int i = 0; i < 8; i++)
         {
-            battleSystemData.preUnitSpeedList.Add(preUnitActionPointList.OrderBy(u => (100 - u.actionPoint) / u.unit.unitData.dexterity).First().unit);
-            BattleCalculation.unitSpeedCalculation(preUnitActionPointList);
+            if (i == 0) 
+            {
+                battleSystemData.preUnitSpeedList.Add(battleSystemData.curActionUnit);
+            }
+            else 
+            {
+                battleSystemData.preUnitSpeedList.Add(preUnitActionPointList.OrderBy(u => (100 - u.actionPoint) / u.unit.unitData.dexterity).First().unit);
+                BattleCalculation.unitSpeedCalculation(preUnitActionPointList);
+            }
         }
     }
 

@@ -16,6 +16,9 @@ public class Unit : MonoBehaviour
     public float criticalHitRate;
     public float dodgeRate;
 
+    [Header("ª¬ºA")]
+    public bool isDead;
+
     [Header("²Õ¥ó")]
     public int curHP;
     public int curMP;
@@ -31,7 +34,8 @@ public class Unit : MonoBehaviour
 
     public void initialize(BaseUnitSO loadUnitData, UnitHPBar loadUnitHPBar) 
     {
-        if(loadUnitData is UnitDataSO) 
+        isDead = false;
+        if (loadUnitData is UnitDataSO) 
         {
             unitData = loadUnitData;
             unitHPBar = loadUnitHPBar;
@@ -78,9 +82,15 @@ public class Unit : MonoBehaviour
         if (curHP < 0)
         {
             curHP = 0;
-            Destroy(this.gameObject);
+            isDead = true;
         }
         unitHPBar.changeHP(this);
+    }
+
+    public void die() 
+    {
+        if(unitData is UnitDataSO)
+            Destroy(this.gameObject);
     }
 
     public IEnumerator hurtFlash(float duration)

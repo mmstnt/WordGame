@@ -6469,6 +6469,7 @@ MonoBehaviour:
   battleUIInitializeEvent: {fileID: 11400000, guid: 0af47b7016f77c242a9dafcc8c4c4d37, type: 2}
   enterSelectUnitEvent: {fileID: 11400000, guid: 83fdf7e5d6df3544f8733b084b444d2b, type: 2}
   waitActionReactivateEvent: {fileID: 11400000, guid: f6d7bd858709b624fac92476bfbcfdb6, type: 2}
+  battleResultEvent: {fileID: 11400000, guid: ec057a1e08a72cd4fa53ea3f4fc80591, type: 2}
   nextRoundEvent: {fileID: 11400000, guid: ec1a3aa6109c45f43909f42551e05ec0, type: 2}
   skillEffectEvent: {fileID: 11400000, guid: 46292b975532cd648882fa4cdcbf50f6, type: 2}
   unitRoundEndEvent: {fileID: 11400000, guid: f65f426029897ed408b1b58d96b58352, type: 2}
@@ -6502,6 +6503,7 @@ MonoBehaviour:
   enterSelectUnitEvent: {fileID: 11400000, guid: 83fdf7e5d6df3544f8733b084b444d2b, type: 2}
   waitActionReactivateEvent: {fileID: 11400000, guid: f6d7bd858709b624fac92476bfbcfdb6, type: 2}
   battleButtonUpdataEvent: {fileID: 11400000, guid: b1b1cbeb20904b646b610bf10dcd6538, type: 2}
+  battleResultEvent: {fileID: 11400000, guid: ec057a1e08a72cd4fa53ea3f4fc80591, type: 2}
   recordLastButtonEvent: {fileID: 11400000, guid: d25bafdc135c30147818dc4311ca5700, type: 2}
   switchSkillGroupEvent: {fileID: 11400000, guid: 1b5488cb48db18a4185ae03d7ee0e777, type: 2}
   nextRoundEvent: {fileID: 11400000, guid: ec1a3aa6109c45f43909f42551e05ec0, type: 2}
@@ -7347,6 +7349,7 @@ MonoBehaviour:
   hitRate: 0
   criticalHitRate: 0
   dodgeRate: 0
+  isDead: 0
   curHP: 0
   curMP: 0
   curAC: 0

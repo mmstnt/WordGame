@@ -40,12 +40,6 @@ public class DialogManager : MonoBehaviour
 
     public Story story;
 
-    private void Awake()
-    {
-        story = new Story(ink.text);
-        dialogCharacterDic = new Dictionary<string, Transform>();
-    }
-
     private void OnEnable()
     {
         dialogConfirmEvent.onEventRaised += onDialogConfirmEvent;
@@ -56,6 +50,12 @@ public class DialogManager : MonoBehaviour
         dialogConfirmEvent.onEventRaised -= onDialogConfirmEvent;
     }
     
+    public void initialize() 
+    {
+        story = new Story(ink.text);
+        clearCharacter();
+    }
+
     private void Update()
     {
         textTime += Time.deltaTime;
@@ -67,6 +67,7 @@ public class DialogManager : MonoBehaviour
             updataText(curNameText, curDialogText);
         }
     }
+
     private void onDialogConfirmEvent()
     {
         if (curDialogText != dialogText && dialogText != "")
@@ -128,6 +129,13 @@ public class DialogManager : MonoBehaviour
         }
     }
 
+    public void jumpToStory(string storyID) 
+    {
+        initialize();
+        story.ChoosePathString(storyID);
+        nextDialog();
+    }
+
     public IEnumerator choiceFirstButton()
     {
         dialogChoiceGroup.GetComponent<CanvasGroup>().interactable = false;
@@ -137,6 +145,18 @@ public class DialogManager : MonoBehaviour
 
         dialogChoiceGroup.GetComponent<CanvasGroup>().interactable = true;
         EventSystem.current.SetSelectedGameObject(dialogChoiceGroup.transform.GetChild(0).gameObject);
+    }
+
+    private void clearCharacter()
+    {
+        if (dialogCharacterDic != null)
+        {
+            foreach (var character in dialogCharacterDic)
+            {
+                Destroy(character.Value.gameObject);
+            }
+        }
+        dialogCharacterDic = new Dictionary<string, Transform>();
     }
 
     private void readDialogTags(List<string> dialogTags) 

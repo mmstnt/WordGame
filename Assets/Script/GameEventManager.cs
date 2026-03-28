@@ -27,6 +27,7 @@ public class GameEventManager : MonoBehaviour
             Destroy(this.gameObject);
 
         playerControl = new PlayerControl();
+        dialogManager.GetComponent<DialogManager>().initialize();
     }
 
     private void OnEnable()
@@ -82,5 +83,14 @@ public class GameEventManager : MonoBehaviour
         dialogManager.SetActive(false);
         battleManager.SetActive(true);
         battleManager.GetComponent<BattleManager>().battleInitialize(battleID, DataManager.instance.playerData);
+    }
+
+    public void endBattle(bool isVictory) 
+    {
+
+        battleManager.SetActive(false);
+        dialogManager.SetActive(true);
+        dialogManager.GetComponent<DialogManager>().jumpToStory("B");
+        Debug.Log(isVictory);
     }
 }

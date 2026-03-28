@@ -16,6 +16,7 @@ public class BattleUIManager : MonoBehaviour
     public VoidEventSO enterSelectUnitEvent;
     public VoidEventSO waitActionReactivateEvent;
     public VoidEventSO battleButtonUpdataEvent;
+    public VoidEventSO battleResultEvent;
     public IntEventSO recordLastButtonEvent;
     public StringEventSO switchSkillGroupEvent;
     public StringEventSO nextRoundEvent;
@@ -54,9 +55,10 @@ public class BattleUIManager : MonoBehaviour
         enterSelectUnitEvent.onEventRaised += onEnterSelectUnitEvent;
         waitActionReactivateEvent.onEventRaised += onWaitActionReactivateEvent;
         battleButtonUpdataEvent.onEventRaised += onBattleButtonUpdataEvent;
-        nextRoundEvent.onEventRaised += onNextRoundEvent;
+        battleResultEvent.onEventRaised += onBattleResultEvent;
         recordLastButtonEvent.onEventRaised += onRecordLastButtonEvent;
         switchSkillGroupEvent.onEventRaised += onSwitchSkillGroupEvent;
+        nextRoundEvent.onEventRaised += onNextRoundEvent;
         skillEffectEvent.onEventRaised += onSkillEffectEvent;
     }
 
@@ -68,9 +70,10 @@ public class BattleUIManager : MonoBehaviour
         enterSelectUnitEvent.onEventRaised -= onEnterSelectUnitEvent;
         waitActionReactivateEvent.onEventRaised -= onWaitActionReactivateEvent;
         battleButtonUpdataEvent.onEventRaised -= onBattleButtonUpdataEvent;
-        nextRoundEvent.onEventRaised -= onNextRoundEvent;
+        battleResultEvent.onEventRaised -= onBattleResultEvent;
         recordLastButtonEvent.onEventRaised -= onRecordLastButtonEvent;
         switchSkillGroupEvent.onEventRaised -= onSwitchSkillGroupEvent;
+        nextRoundEvent.onEventRaised -= onNextRoundEvent;
         skillEffectEvent.onEventRaised -= onSkillEffectEvent;
     }
 
@@ -187,14 +190,18 @@ public class BattleUIManager : MonoBehaviour
 
     public IEnumerator SkillEffectCoroutine(SkillDataSO skill, Vector3 pos, UnityAction onComplete)
     {
-        GameObject skillEffect = Instantiate(skill.skillAni, pos, Quaternion.identity, effectGroup);
+        //有動畫則先播放
+        if (skill.skillAni != null)
+        {
+            GameObject skillEffect = Instantiate(skill.skillAni, pos, Quaternion.identity, effectGroup);
 
-        //計算動畫播放時間
-        float duration = skillEffect.GetComponent<EffectAnimator>().CalculateDuration();
+            //計算動畫播放時間
+            float duration = skillEffect.GetComponent<EffectAnimator>().CalculateDuration();
 
-        yield return new WaitForSeconds(duration);
+            yield return new WaitForSeconds(duration);
 
-        Destroy(skillEffect);
+            Destroy(skillEffect);
+        }
 
         //讓戰鬥管理器解除等待
         onComplete?.Invoke();
@@ -266,11 +273,17 @@ public class BattleUIManager : MonoBehaviour
         }
     }
 
+    public void onBattleResultEvent()
+    {
+        curUI.gameObject.SetActive(false);
+
+    }
+
     public void setUnitColor()
     {
         foreach (var unit in battleSystemData.enemyUnit)
         {
-            if(unit!=null)
+            if (unit != null) 
             unit.GetComponent<SpriteRenderer>().color = new Color(0.75f, 0.75f, 0.75f);
         }
         if (battleSystemData.battleState == BattleState.SelectUnit && battleSystemData.curSelectUnit != null)
