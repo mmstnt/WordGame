@@ -35,9 +35,6 @@ public class BattleUIManager : MonoBehaviour
     public Transform actionOrderGroup;
     public Transform effectGroup;
 
-    [Header("玩家UI")]
-    public UnitHPBar playerHPBar;
-
     [Header("組件")]
     public GameObject skillButtonGameObject;
     public GameObject pointGameObject;
@@ -84,7 +81,6 @@ public class BattleUIManager : MonoBehaviour
 
         curUI = actionGroup;
         //初始化玩家血條
-        battleSystemData.playerUnit.initialize(battleSystemData.playerBattleData, playerHPBar);
         for(int i = 0; i < battleSystemData.playerUnit.maxAC; i++) 
         {
             GameObject acPoint = Instantiate(pointGameObject, acGrounp);
@@ -241,9 +237,9 @@ public class BattleUIManager : MonoBehaviour
         for (int i = 0; i < skillList.Length; i++)
         {
             int index = i;
-            int x = (i % 4) * 200;
-            int y = (i / 4) * 80;
-            Vector2 site = new Vector2(-300 + x, 40 + y);
+            int x = (i % 4) * 260;
+            int y = (i / 4) * -130;
+            Vector2 site = new Vector2(-390 + x, 120 + y);
             string skillID = skillList[i];
 
             GameObject skillButton = Instantiate(skillButtonGameObject, skillGroup);
@@ -294,8 +290,8 @@ public class BattleUIManager : MonoBehaviour
 
     public void updateUI() 
     {
-        updataUIPoint(acGrounp, battleSystemData.playerUnit.curAC, "1", "2");
-        updataUIPoint(mpGrounp, battleSystemData.playerUnit.curMP, "4", "5");
+        updataUIPoint(acGrounp, battleSystemData.playerUnit.curAC, "UI00001", "UI00002");
+        updataUIPoint(mpGrounp, battleSystemData.playerUnit.curMP, "UI00004", "UI00005");
 
         preUI();
         actionOrderUI();
@@ -311,8 +307,8 @@ public class BattleUIManager : MonoBehaviour
         {
             int needAC = DataManager.instance.skillDataList.getData(curSelectSkill.skillID).AC;
             int needMP = DataManager.instance.skillDataList.getData(curSelectSkill.skillID).MP;
-            updataUIPrePoint(preACGrounp, battleSystemData.playerUnit.curAC, needAC, "3");
-            updataUIPrePoint(preMPGrounp, battleSystemData.playerUnit.curMP, needMP, "6");
+            updataUIPrePoint(preACGrounp, battleSystemData.playerUnit.curAC, needAC, "UI00003");
+            updataUIPrePoint(preMPGrounp, battleSystemData.playerUnit.curMP, needMP, "UI00006");
         }
     }
 
@@ -323,7 +319,27 @@ public class BattleUIManager : MonoBehaviour
         for(int i= battleSystemData.preUnitSpeedList.Count - 1; i >= 0; i--) 
         {
             GameObject characterSpeedBox = Instantiate(characterSpeedBoxGameObject, actionOrderGroup);
-            characterSpeedBox.GetComponent<Image>().sprite = battleSystemData.preUnitSpeedList[i].unitData.image;
+            BaseUnitSO unitSO = battleSystemData.preUnitSpeedList[i].unitData;
+            Sprite box = null, mask = null;
+
+            //取得頭像
+            switch (battleSystemData.preUnitSpeedList[i].faction) 
+            {
+                case BattleFaction.Player:
+
+                    box = DataManager.instance.uiImageDataList.getData("UI00007");
+                    mask = DataManager.instance.uiImageDataList.getData("UI00008");
+                    break;
+                case BattleFaction.Enemy:
+
+                    box = DataManager.instance.uiImageDataList.getData("UI00009");
+                    mask = DataManager.instance.uiImageDataList.getData("UI00010");
+                    break;
+            }
+            Sprite headImage = battleSystemData.preUnitSpeedList[i].unitData.image;
+            Color color = (i == 0) ? Color.white : new Color(0.5f, 0.5f, 0.5f);
+
+            characterSpeedBox.GetComponent<CharacterSpeedBox>().initialize(box, mask, headImage, color);
         }
     }
 

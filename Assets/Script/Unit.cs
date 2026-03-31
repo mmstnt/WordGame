@@ -5,6 +5,7 @@ using UnityEngine.UI;
 public class Unit : MonoBehaviour
 {
     public BaseUnitSO unitData;
+    public BattleFaction faction;
 
     [Header("�򥻸귽")]
     public int maxHP;
@@ -32,34 +33,27 @@ public class Unit : MonoBehaviour
             Destroy(unitHPBar.gameObject);
     }
 
-    public void initialize(BaseUnitSO loadUnitData, UnitHPBar loadUnitHPBar) 
+    public void initialize(BaseUnitSO loadUnitData, UnitHPBar loadUnitHPBar, BattleFaction battleFaction) 
     {
         isDead = false;
+        faction = battleFaction;
+
+        unitData = loadUnitData;
+        unitHPBar = loadUnitHPBar;
+        unitAttributeCalculation();
+
+        curHP = maxHP;
+        curMP = maxMP;
+        curAC = maxAC;
+
         if (loadUnitData is UnitDataSO) 
         {
-            unitData = loadUnitData;
-            unitHPBar = loadUnitHPBar;
-
             this.transform.GetComponent<SpriteRenderer>().sprite = unitData.image;
-            unitAttributeCalculation();
-
-            curHP = maxHP;
-            curMP = maxMP;
-            curAC = maxAC;
 
             unitHPBar.initialize(this);
         }
         else if(loadUnitData is PlayerDataSO) 
         {
-            unitData = loadUnitData;
-            unitHPBar = loadUnitHPBar;
-
-            unitAttributeCalculation();
-
-            curHP = maxHP;
-            curMP = maxMP;
-            curAC = maxAC;
-
             unitHPBar.changeHP(this);
         }
     }

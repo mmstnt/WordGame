@@ -15,12 +15,15 @@ MonoBehaviour:
   image: {fileID: 21300000, guid: ba619ad3237371b49b20a0979ee3e62e, type: 3}
   strength: 50
   dexterity: 50
-  constitution: 5
+  constitution: 50
   intelligence: 50
   wisdom: 50
   charisma: 50
   curMartial:
   - 1
+  - 2
+  - 2
+  - 2
   - 2
   curMagic:
   - 1

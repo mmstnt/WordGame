@@ -14,3 +14,9 @@ public enum BattleState
     SelectUnit,
     End
 }
+
+public enum BattleFaction
+{
+    Player,
+    Enemy
+}

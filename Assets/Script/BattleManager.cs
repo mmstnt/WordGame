@@ -34,6 +34,7 @@ public class BattleManager : MonoBehaviour
 
     [Header("組件")]
     public Unit playerUnit;
+    public UnitHPBar playerHPBar;
     public Transform unitGroup;
     public Transform unitHPBarGroup;
     public GameObject unitGameObject;
@@ -210,6 +211,7 @@ public class BattleManager : MonoBehaviour
         battleSystemData.playerBattleData = playerData;
         //初始化玩家
         battleSystemData.playerUnit = playerUnit;
+        battleSystemData.playerUnit.initialize(battleSystemData.playerBattleData, playerHPBar, BattleFaction.Player);
 
         //生成敵人單位
         BattleDataSO battleData = DataManager.instance.battleDataList.getData(battleID);
@@ -222,7 +224,7 @@ public class BattleManager : MonoBehaviour
                 battleSystemData.enemyUnit[i] = Instantiate(unitGameObject, battleData.mapData.unitSite[i], Quaternion.identity, unitGroup).GetComponent<Unit>();
                 UnitHPBar unitHPBar = Instantiate(unitHPBarGameObject, unitHPBarGroup).GetComponent<UnitHPBar>();
                 //初始化敵人血條
-                battleSystemData.enemyUnit[i].initialize(unitData, unitHPBar);
+                battleSystemData.enemyUnit[i].initialize(unitData, unitHPBar, BattleFaction.Enemy);
             }
         }
         //建立單位行動清單
@@ -231,10 +233,10 @@ public class BattleManager : MonoBehaviour
         allUnit.AddRange(battleSystemData.enemyUnit);
         foreach (Unit unit in allUnit) 
         {
-            unitActionPoint unitAC = new unitActionPoint();
-            unitAC.unit = unit;
-            unitAC.actionPoint = 0;
-            battleSystemData.unitSpeedList.Add(unitAC);
+            unitActionPoint unitACPoint = new unitActionPoint();
+            unitACPoint.unit = unit;
+            unitACPoint.actionPoint = 0;
+            battleSystemData.unitSpeedList.Add(unitACPoint);
         }
 
         battleSystemData.curSelectUnit = reSetSelectUnit();
