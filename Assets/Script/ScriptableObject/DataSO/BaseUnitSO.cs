@@ -3,6 +3,7 @@ using UnityEngine;
 public abstract class BaseUnitSO : ScriptableObject
 {
     public Sprite image;
+    public Sprite battleImage;
 
     public int strength;
     public int dexterity;

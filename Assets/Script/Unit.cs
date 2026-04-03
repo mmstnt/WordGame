@@ -48,7 +48,7 @@ public class Unit : MonoBehaviour
 
         if (loadUnitData is UnitDataSO) 
         {
-            this.transform.GetComponent<SpriteRenderer>().sprite = unitData.image;
+            this.transform.GetComponent<SpriteRenderer>().sprite = unitData.battleImage;
 
             unitHPBar.initialize(this);
         }

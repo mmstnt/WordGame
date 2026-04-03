@@ -19,4 +19,4 @@ MonoBehaviour:
   AC: 2
   MP: 1
   effect: []
-  skillAni: {fileID: 0}
+  skillAni: {fileID: 3321004211514625709, guid: 5675f141e38df544488d4226ea544b82, type: 3}

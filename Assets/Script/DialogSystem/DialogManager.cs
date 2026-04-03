@@ -174,11 +174,12 @@ public class DialogManager : MonoBehaviour
                     string ch = tagsCmd[1];
                     string chImage = tagsCmd[2];
                     Vector2 site = new Vector2(float.Parse(tagsCmd[3]), float.Parse(tagsCmd[4]) - 3);
-                    bool RL = (tagsCmd[5] == "R") ? true : false;
-                    showCharacter(ch, chImage, site, RL);
+                    bool RL = (tagsCmd[5] == "L") ? true : false;
+                    StartCoroutine(showCharacter(ch, chImage, site, RL));
                     break;
                 case "exit":
-
+                    string exitch = tagsCmd[1];
+                    StartCoroutine(exitCharacter(exitch,2.0f));
                     break;
                 case "background":
                     string backgroundID = tagsCmd[1];
@@ -198,18 +199,33 @@ public class DialogManager : MonoBehaviour
         curNameText = nameText;
     }
 
-    private void showCharacter(string ch, string chImage, Vector2 site, bool RL) 
+    private IEnumerator showCharacter(string ch, string chImage, Vector2 site, bool RL) 
     {
         if (!dialogCharacterDic.ContainsKey(ch)) 
         {
             GameObject dialogCharacter = Instantiate(characterGameObject, characterGroup);
             dialogCharacterDic[ch] = dialogCharacter.transform;
-            dialogCharacterDic[ch].GetComponent<Image>().sprite = DataManager.instance.characterImageDataList.getData(chImage);
-            dialogCharacterDic[ch].GetComponent<Image>().SetNativeSize();
-            dialogCharacterDic[ch].GetComponent<Image>().color = Color.white;
+
             dialogCharacterDic[ch].position = site;
-            dialogCharacterDic[ch].rotation = Quaternion.Euler(0, RL ? 0 : 180, 0);
+            dialogCharacterDic[ch].rotation = Quaternion.Euler(0, (RL ? 0 : 180), 0);
             dialogCharacterDic[ch].SetAsLastSibling();
+
+            Image spr = dialogCharacterDic[ch].GetComponent<Image>();
+
+            spr.sprite = DataManager.instance.characterImageDataList.getData(chImage);
+            spr.SetNativeSize();
+            spr.color = Color.white;
+            Color color = spr.color;
+            color.a = 0;
+
+            while (color.a <= 1.0f)
+            {
+                // 逐漸減少透明度
+                color.a += 2 * Time.deltaTime;
+                spr.color = color;
+                yield return null; // 等待下一影幀
+            }
+
         }
         else
         {
@@ -220,6 +236,23 @@ public class DialogManager : MonoBehaviour
             dialogCharacterDic[ch].rotation = Quaternion.Euler(0, RL ? 0 : 180, 0);
             dialogCharacterDic[ch].SetAsLastSibling();
         }
+    }
+
+    private IEnumerator exitCharacter(string exitch, float fadeSpeed)
+    {
+        GameObject chGameobject = dialogCharacterDic[exitch].gameObject;
+        Image spr = chGameobject.GetComponent<Image>();
+        Color color = spr.color;
+
+        while (color.a > 0)
+        {
+            // 逐漸減少透明度
+            color.a -= fadeSpeed * Time.deltaTime;
+            spr.color = color;
+            yield return null; // 等待下一影幀
+        }
+        Destroy(dialogCharacterDic[exitch].gameObject);
+        dialogCharacterDic.Remove(exitch);
     }
 
     private void showBackground(string backgroundID) 

@@ -6,8 +6,10 @@ public class EffectAnimator : MonoBehaviour
 {
     public float CalculateDuration() 
     {
-        Animator anim = GetComponent<Animator>();
         float maxDuration = 0f;
+
+        Animator anim = GetComponent<Animator>();
+        ParticleSystem[] allParticles = GetComponentsInChildren<ParticleSystem>();
 
         if (anim != null && anim.runtimeAnimatorController != null)
         {
@@ -21,6 +23,18 @@ public class EffectAnimator : MonoBehaviour
                 {
                     maxDuration = clip.length;
                 }
+            }
+        }
+
+
+        foreach (ParticleSystem ps in allParticles)
+        {
+            //抓取粒子最長持續時間
+            float psTotalTime = ps.main.duration + ps.main.startLifetime.constantMax;
+
+            if (psTotalTime > maxDuration)
+            {
+                maxDuration = psTotalTime;
             }
         }
 

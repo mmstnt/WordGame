@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26bbc675718040b42807492bea1f3914, type: 3}
   m_Name: Unit00002
   m_EditorClassIdentifier: 
-  image: {fileID: 21300000, guid: ab2bc07e50c0a7a4bb66d512396d7a36, type: 3}
+  image: {fileID: 21300000, guid: 393cb32155ef9de448adee34883757ba, type: 3}
+  battleImage: {fileID: 21300000, guid: 4a6751749c5b49d4d9062f911b2f0cdf, type: 3}
   strength: 50
   dexterity: 50
   constitution: 10
