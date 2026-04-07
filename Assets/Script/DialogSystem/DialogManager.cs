@@ -1,7 +1,7 @@
 using Ink.Runtime;
-using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -36,7 +36,16 @@ public class DialogManager : MonoBehaviour
     public GameObject backgroundGameObject;
     public GameObject dialogChoiceButtonGameObject;
 
-    private Dictionary<string, Transform> dialogCharacterDic;
+    private Dictionary<string, DialogCharacter> dialogCharacterDic;
+    private Dictionary<string, int> tagPriority = new Dictionary<string, int>
+    {
+        {"backgroung", 0},  //更換背景
+        {"name", 1},        //更換名字
+        {"show", 2},        //創建和移動角色
+        {"high", 3},        //角色高亮
+        {"exit",4},         //移除角色
+        {"battle",5},       //進入戰鬥
+    };
 
     public Story story;
 
@@ -103,7 +112,12 @@ public class DialogManager : MonoBehaviour
             }
             if (story.currentTags.Count > 0) 
             {
-                readDialogTags(story.currentTags);
+                List<string> sortedTags = story.currentTags.OrderBy(t => {
+                    string key = t.Split(':')[0].Trim();
+                    return tagPriority.ContainsKey(key) ? tagPriority[key] : 99; // 沒定義的排最後
+                }).ToList();
+
+                readDialogTags(sortedTags);
             }
         }
         else if (story.currentChoices.Count > 0) 
@@ -156,7 +170,7 @@ public class DialogManager : MonoBehaviour
                 Destroy(character.Value.gameObject);
             }
         }
-        dialogCharacterDic = new Dictionary<string, Transform>();
+        dialogCharacterDic = new Dictionary<string, DialogCharacter>();
     }
 
     private void readDialogTags(List<string> dialogTags) 
@@ -166,6 +180,10 @@ public class DialogManager : MonoBehaviour
             string[] tagsCmd = tags.Split(",");
             switch (tagsCmd[0])
             {
+                case "background":
+                    string backgroundID = tagsCmd[1];
+                    showBackground(backgroundID);
+                    break;
                 case "name":
                     string name = tagsCmd[1];
                     getDialogName(name);
@@ -175,15 +193,17 @@ public class DialogManager : MonoBehaviour
                     string chImage = tagsCmd[2];
                     Vector2 site = new Vector2(float.Parse(tagsCmd[3]), float.Parse(tagsCmd[4]) - 3);
                     bool RL = (tagsCmd[5] == "L") ? true : false;
-                    StartCoroutine(showCharacter(ch, chImage, site, RL));
+                    showCharacter(ch, chImage, site, RL);
+                    break;
+                case "high":
+                    for(int i = 1; i < tagsCmd.Length; i++) 
+                    {
+                        dialogCharacterDic[tagsCmd[i]].image.color = Color.white;
+                    }
                     break;
                 case "exit":
                     string exitch = tagsCmd[1];
-                    StartCoroutine(exitCharacter(exitch,2.0f));
-                    break;
-                case "background":
-                    string backgroundID = tagsCmd[1];
-                    showBackground(backgroundID);
+                    StartCoroutine(exitCharacter(exitch));
                     break;
                 case "battle":
                     string battleID = tagsCmd[1];
@@ -199,58 +219,34 @@ public class DialogManager : MonoBehaviour
         curNameText = nameText;
     }
 
-    private IEnumerator showCharacter(string ch, string chImage, Vector2 site, bool RL) 
+    private void showCharacter(string ch, string chImageID, Vector2 site, bool dire) 
     {
-        if (!dialogCharacterDic.ContainsKey(ch)) 
+        if (!dialogCharacterDic.ContainsKey(ch))
         {
+            //生成角色物件
             GameObject dialogCharacter = Instantiate(characterGameObject, characterGroup);
-            dialogCharacterDic[ch] = dialogCharacter.transform;
 
-            dialogCharacterDic[ch].position = site;
-            dialogCharacterDic[ch].rotation = Quaternion.Euler(0, (RL ? 0 : 180), 0);
-            dialogCharacterDic[ch].SetAsLastSibling();
-
-            Image spr = dialogCharacterDic[ch].GetComponent<Image>();
-
-            spr.sprite = DataManager.instance.characterImageDataList.getData(chImage);
-            spr.SetNativeSize();
-            spr.color = Color.white;
-            Color color = spr.color;
-            color.a = 0;
-
-            while (color.a <= 1.0f)
-            {
-                // 逐漸減少透明度
-                color.a += 2 * Time.deltaTime;
-                spr.color = color;
-                yield return null; // 等待下一影幀
-            }
-
+            dialogCharacterDic[ch] = dialogCharacter.GetComponent<DialogCharacter>();
+            dialogCharacterDic[ch].initialize(chImageID, site, dire);
+            StartCoroutine(dialogCharacterDic[ch].characterFade(2.0f, false));
+            
+            //將角色排到最上層
+            dialogCharacterDic[ch].transform.SetAsLastSibling();
         }
         else
         {
-            dialogCharacterDic[ch].GetComponent<Image>().sprite = DataManager.instance.characterImageDataList.getData(chImage);
-            dialogCharacterDic[ch].GetComponent<Image>().SetNativeSize();
-            dialogCharacterDic[ch].GetComponent<Image>().color = Color.white;
-            dialogCharacterDic[ch].GetComponent<DialogCharacter>().moveTo(site, 5);
-            dialogCharacterDic[ch].rotation = Quaternion.Euler(0, RL ? 0 : 180, 0);
-            dialogCharacterDic[ch].SetAsLastSibling();
+            dialogCharacterDic[ch].moveTo(chImageID, site, dire, 5);
+
+            //將角色排到最上層
+            dialogCharacterDic[ch].transform.SetAsLastSibling();
         }
     }
 
-    private IEnumerator exitCharacter(string exitch, float fadeSpeed)
+    private IEnumerator exitCharacter(string exitch)
     {
-        GameObject chGameobject = dialogCharacterDic[exitch].gameObject;
-        Image spr = chGameobject.GetComponent<Image>();
-        Color color = spr.color;
+        //等待執行完
+        yield return dialogCharacterDic[exitch].characterFade(2.0f, true);
 
-        while (color.a > 0)
-        {
-            // 逐漸減少透明度
-            color.a -= fadeSpeed * Time.deltaTime;
-            spr.color = color;
-            yield return null; // 等待下一影幀
-        }
         Destroy(dialogCharacterDic[exitch].gameObject);
         dialogCharacterDic.Remove(exitch);
     }

@@ -1,12 +1,25 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class DialogCharacter : MonoBehaviour
 {
     private Coroutine currentMoveCoroutine;
     private Vector2 endPosition;
+    public Image image;
 
-    public void moveTo(Vector2 vector, float time)
+    public void initialize(string chImageID,Vector2 site, bool dire) 
+    {
+        image = GetComponent<Image>();
+        image.sprite = DataManager.instance.characterImageDataList.getData(chImageID);
+        image.color = Color.gray;
+        image.SetNativeSize();
+
+        transform.position = site;
+        transform.rotation = Quaternion.Euler(0, (dire ? 0 : 180), 0);
+    }
+
+    public void moveTo(string chImageID, Vector2 vector, bool dire, float speed)
     {
         if (currentMoveCoroutine != null)
         {
@@ -14,9 +27,12 @@ public class DialogCharacter : MonoBehaviour
             transform.position = endPosition;
         }
 
+        image.sprite = DataManager.instance.characterImageDataList.getData(chImageID);
+        image.SetNativeSize();
+        transform.rotation = Quaternion.Euler(0, (dire ? 0 : 180), 0);
         endPosition = vector;
 
-        currentMoveCoroutine = StartCoroutine(moveCoroutine(vector, time));
+        currentMoveCoroutine = StartCoroutine(moveCoroutine(vector, speed));
     }
 
     private IEnumerator moveCoroutine(Vector2 vector, float speed)
@@ -36,5 +52,19 @@ public class DialogCharacter : MonoBehaviour
 
         transform.position = vector;
         currentMoveCoroutine = null;
+    }
+
+    public IEnumerator characterFade(float speed, bool isfade) 
+    {
+        Color color = image.color;
+        color.a = isfade ? 1 : 0;
+
+        while (isfade ? color.a >= 0f : color.a <= 1.0f) 
+        {
+            // 逐漸減少透明度
+            color.a += (isfade ? -speed : speed) * Time.deltaTime;
+            image.color = color;
+            yield return null; // 等待下一影幀
+        }
     }
 }
