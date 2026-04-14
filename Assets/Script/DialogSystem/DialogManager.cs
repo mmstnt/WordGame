@@ -177,36 +177,37 @@ public class DialogManager : MonoBehaviour
     {
         foreach (var tags in dialogTags)
         {
-            string[] tagsCmd = tags.Split(",");
-            switch (tagsCmd[0])
+            string tagsCmd = tags.Contains(":") ? tags.Split(':')[0] : tags;
+            string[] args = tags.Contains(":") ? tags.Split(':')[1].Split(',') : new string[0];
+            switch (tagsCmd)
             {
                 case "background":
-                    string backgroundID = tagsCmd[1];
+                    string backgroundID = args[0];
                     showBackground(backgroundID);
                     break;
                 case "name":
-                    string name = tagsCmd[1];
+                    string name = args[0];
                     getDialogName(name);
                     break;
                 case "show":
-                    string ch = tagsCmd[1];
-                    string chImage = tagsCmd[2];
-                    Vector2 site = new Vector2(float.Parse(tagsCmd[3]), float.Parse(tagsCmd[4]) - 3);
-                    bool RL = (tagsCmd[5] == "L") ? true : false;
+                    string ch = args[0];
+                    string chImage = args[1];
+                    Vector2 site = new Vector2(float.Parse(args[2]), float.Parse(args[3]) - 3);
+                    bool RL = (args[4] == "L") ? true : false;
                     showCharacter(ch, chImage, site, RL);
                     break;
                 case "high":
-                    for(int i = 1; i < tagsCmd.Length; i++) 
+                    for(int i = 0; i < args.Length; i++) 
                     {
-                        dialogCharacterDic[tagsCmd[i]].image.color = Color.white;
+                        dialogCharacterDic[args[i]].image.color = Color.white;
                     }
                     break;
                 case "exit":
-                    string exitch = tagsCmd[1];
+                    string exitch = args[0];
                     StartCoroutine(exitCharacter(exitch));
                     break;
                 case "battle":
-                    string battleID = tagsCmd[1];
+                    string battleID = args[0];
                     GameEventManager.instance.enterBattle(battleID);
                     break;
             }
