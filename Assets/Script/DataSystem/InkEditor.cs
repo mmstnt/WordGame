@@ -1,9 +1,10 @@
-using UnityEngine;
-using UnityEditor;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Text.RegularExpressions;
+using UnityEditor;
+using UnityEngine;
 using UnityEngine.UIElements;
+using static Unity.Burst.Intrinsics.X86.Avx;
 
 public class InkEditor : EditorWindow
 {
@@ -19,7 +20,7 @@ public class InkEditor : EditorWindow
 
     private Dictionary<string, string[]> tagCommand = new Dictionary<string, string[]>() {
         { "backgroung", new[] { "背景ID" } },
-        { "name", new[] { "對話顯示名稱" } },
+        { "name", new[] { "對話名稱" } },
         { "show", new[] { "角色物件", "立繪ID", "X座標", "Y座標", "方向" } },
         { "high", new[] { "角色物件", } },
         { "exit", new[] { "角色物件" } },
@@ -106,6 +107,8 @@ public class InkEditor : EditorWindow
         //設定字型
         GUIStyle textAreaStyle = new GUIStyle(EditorStyles.textArea);
         textAreaStyle.wordWrap = true;
+        textAreaStyle.stretchWidth = true;
+        textAreaStyle.clipping = TextClipping.Clip;
         textAreaStyle.fontSize = 12;
         textAreaStyle.padding = new RectOffset(4, 4, 4, 4);
 
@@ -124,16 +127,27 @@ public class InkEditor : EditorWindow
         int start = (selectKnotIndex != -1) ? start = fileKnots[selectFile][selectKnotIndex].startLine : 0;
         int end = (selectKnotIndex != -1) ? end = fileKnots[selectFile][selectKnotIndex].endLine : lineList.Count;
 
-        float viewWidth = position.width - 240;
+        int indexToMoveUp = -1;
+        int indexToMoveDown = -1;
+        int indexToAddAfter = -1;
+        int indexToDelete = -1;
+
+        float viewWidth = Mathf.Max(430, position.width - 360);
 
         //繪製文字內容
         for (int i = start; i < end; i++)
         {
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+
+            //繪製每行基礎按鈕
             EditorGUILayout.BeginHorizontal();
 
             //將文字和標籤分開
             string content = lineList[i].Split('#')[0].TrimEnd();
+            string nameText = content.Contains(":") ? content.Split(":")[0].TrimEnd() : "";
+            string dialogText = content.Contains(":") ? content.Split(":")[1].TrimEnd() : content;
+
+            //節點變黃色
             GUIStyle lineNumStyle = new GUIStyle(EditorStyles.miniLabel) { fixedWidth = 25 };
             if (content.Trim().StartsWith("=="))
             {
@@ -141,14 +155,42 @@ public class InkEditor : EditorWindow
             }
             GUILayout.Label($"{i + 1}", lineNumStyle);
 
-            // 計算高度：現在最小高度設為 20 (約一行高)
-            float h = textAreaStyle.CalcHeight(new GUIContent(content), viewWidth);
-            float maxH = Mathf.Max(20, h);
+            //上下移動按鈕
+            GUI.enabled = i > start; //第一行不能往上
+            if (GUILayout.Button("▲", EditorStyles.miniButtonLeft, GUILayout.Width(20))) indexToMoveUp = i;
+            GUI.enabled = i < end - 1; //最後一行不能往下
+            if (GUILayout.Button("▼", EditorStyles.miniButtonRight, GUILayout.Width(20))) indexToMoveDown = i;
+            GUI.enabled = true;
 
-            string newContent = EditorGUILayout.TextArea(content, textAreaStyle, GUILayout.Height(maxH), GUILayout.ExpandWidth(true));
-            
+            GUILayout.Space(5);
+
+            //插入按鈕
+            if (GUILayout.Button("+ 插入", EditorStyles.miniButton, GUILayout.Width(45))) indexToAddAfter = i;
+
+            //刪除按鈕
+            GUI.contentColor = new Color(1f, 0.4f, 0.4f);
+            if (GUILayout.Button("刪除", EditorStyles.miniButton, GUILayout.Width(40))) indexToDelete = i;
+            GUI.contentColor = Color.white;
+
+            EditorGUILayout.EndHorizontal();
+
+            //繪製每行內容
+            EditorGUILayout.BeginHorizontal();
+
+            //計算文字框高度
+            float nameH = textAreaStyle.CalcHeight(new GUIContent(nameText), 60);
+            float maxNameH = Mathf.Max(20, nameH);
+
+            float dialogTextH = textAreaStyle.CalcHeight(new GUIContent(dialogText), viewWidth);
+            float maxDialogTextH = Mathf.Max(20, dialogTextH);
+
+            GUILayout.Label("名稱", EditorStyles.miniBoldLabel, GUILayout.Width(20));
+            string newNameText = EditorGUILayout.TextArea(nameText, textAreaStyle, GUILayout.Height(maxNameH), GUILayout.Width(60));
+            GUILayout.Label("對話", EditorStyles.miniBoldLabel, GUILayout.Width(20));
+            string newDialogText = EditorGUILayout.TextArea(dialogText, textAreaStyle, GUILayout.Height(maxDialogTextH), GUILayout.ExpandWidth(true));
+
             //繪製添加標籤按鈕
-            if (GUILayout.Button("+", GUILayout.Width(22)))
+            if (GUILayout.Button("+", GUILayout.Width(20)))
             {
                 ShowTagMenu(i);
             }
@@ -167,19 +209,23 @@ public class InkEditor : EditorWindow
                     EditorGUILayout.BeginHorizontal("box");
                     GUI.backgroundColor = Color.white;
 
+                    //拆分指令和參數
                     string rawTag = tagList[t];
                     string cmd = rawTag.Contains(":") ? rawTag.Split(':')[0] : rawTag;
                     string[] args = rawTag.Contains(":") ? rawTag.Split(':')[1].Split(',') : new string[0];
 
-                    GUILayout.Label($"#{cmd}", EditorStyles.miniBoldLabel, GUILayout.Width(70));
+                    GUILayout.Label($"#{cmd}", EditorStyles.miniBoldLabel, GUILayout.Width(80));
 
                     if (tagCommand.ContainsKey(cmd))
                     {
                         string[] schema = tagCommand[cmd];
                         for (int j = 0; j < schema.Length; j++)
                         {
-                            EditorGUILayout.LabelField(schema[j], EditorStyles.miniLabel, GUILayout.Width(35));
-                            if (args.Length <= j) System.Array.Resize(ref args, j + 1);
+                            EditorGUILayout.LabelField(schema[j], EditorStyles.miniLabel, GUILayout.Width(50));
+                            if (args.Length <= j)
+                            {
+                                System.Array.Resize(ref args, j + 1);
+                            }
                             args[j] = EditorGUILayout.TextField(args[j] ?? "", GUILayout.MinWidth(40), GUILayout.Height(16));
                         }
                         tagList[t] = $"{cmd}:{string.Join(",", args)}";
@@ -190,15 +236,25 @@ public class InkEditor : EditorWindow
                         tagList[t] = string.IsNullOrEmpty(newVal) ? cmd : $"{cmd}:{newVal}";
                     }
 
-                    if (GUILayout.Button("x", EditorStyles.miniButton, GUILayout.Width(18))) tagToDelete = t;
+                    if (GUILayout.Button("x", EditorStyles.miniButton, GUILayout.Width(18)))
+                    {
+                        tagToDelete = t;
+                    }
                     EditorGUILayout.EndHorizontal();
                     EditorGUILayout.EndHorizontal();
                 }
             }
 
-            if (tagToDelete != -1) tagList.RemoveAt(tagToDelete);
-            string finalLine = newContent;
-            foreach (var t in tagList) finalLine += " #" + t;
+            //標籤和文字變更
+            if (tagToDelete != -1)
+            {
+                tagList.RemoveAt(tagToDelete);
+            }
+            string finalLine = (newNameText == "") ? newDialogText : newNameText + ":" + newDialogText;
+            foreach (var t in tagList)
+            {
+                finalLine += " #" + t;
+            }
             if (lineList[i] != finalLine)
             {
                 lineList[i] = finalLine;
@@ -207,7 +263,36 @@ public class InkEditor : EditorWindow
 
             EditorGUILayout.EndVertical();
         }
+
+        // --- 執行列表變更作業 ---
+        if (indexToMoveUp != -1)
+        {
+            string temp = lineList[indexToMoveUp];
+            lineList.RemoveAt(indexToMoveUp);
+            lineList.Insert(indexToMoveUp - 1, temp);
+        }
+        if (indexToMoveDown != -1)
+        {
+            string temp = lineList[indexToMoveDown];
+            lineList.RemoveAt(indexToMoveDown);
+            lineList.Insert(indexToMoveDown + 1, temp);
+        }
+        if (indexToAddAfter != -1)
+        {
+            lineList.Insert(indexToAddAfter + 1, ":");
+        }
+        if (indexToDelete != -1)
+        {
+            lineList.RemoveAt(indexToDelete);
+        }
+        getKnot(selectFile); // 重新計算節點位置
+        Repaint();
         EditorGUILayout.EndScrollView();
+    }
+
+    private void drawContent(int i, List<string> lineList)
+    {
+
     }
 
     private List<string> getLineTag(string line)

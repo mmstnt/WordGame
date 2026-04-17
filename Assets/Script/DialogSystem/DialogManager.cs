@@ -19,7 +19,6 @@ public class DialogManager : MonoBehaviour
     public TMP_Text nameTextGameObject;
     public TMP_Text dialogTextGameObject;
     public float textSpeed;
-    public string nameText;
     public string dialogText;
 
     private float textTime;
@@ -104,8 +103,8 @@ public class DialogManager : MonoBehaviour
         {
             story.Continue();
             curDialogText = "";
-            curNameText = "";
-            dialogText = story.currentText;
+            curNameText = story.currentText.Contains(":") ? story.currentText.Split(":")[0] : "";
+            dialogText = story.currentText.Contains(":") ? story.currentText.Split(":")[1] : story.currentText;
             foreach (var dialogCharacter in dialogCharacterDic)
             {
                 dialogCharacter.Value.GetComponent<Image>().color = Color.gray;
@@ -187,7 +186,6 @@ public class DialogManager : MonoBehaviour
                     break;
                 case "name":
                     string name = args[0];
-                    getDialogName(name);
                     break;
                 case "show":
                     string ch = args[0];
@@ -212,12 +210,6 @@ public class DialogManager : MonoBehaviour
                     break;
             }
         }
-    }
-
-    private void getDialogName(string name) 
-    {
-        nameText = name;
-        curNameText = nameText;
     }
 
     private void showCharacter(string ch, string chImageID, Vector2 site, bool dire) 
