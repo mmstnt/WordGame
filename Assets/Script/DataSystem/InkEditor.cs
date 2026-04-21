@@ -2,9 +2,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using UnityEditor;
+using UnityEditor.Rendering;
 using UnityEngine;
-using UnityEngine.UIElements;
-using static Unity.Burst.Intrinsics.X86.Avx;
 
 public class InkEditor : EditorWindow
 {
@@ -17,6 +16,14 @@ public class InkEditor : EditorWindow
     private Vector2 fileScroll;
     private Vector2 knotScroll;
     private Vector2 editorScroll;
+
+    private bool isDragging = false;
+    private int draggedIndex = -1;
+    private int targetIndex = -1;
+
+    private bool isDraggingKnot = false;
+    private int draggedKnotIndex = -1;
+    private int targetKnotIndex = -1;
 
     private Dictionary<string, string[]> tagCommand = new Dictionary<string, string[]>() {
         { "backgroung", new[] { "背景ID" } },
@@ -78,22 +85,79 @@ public class InkEditor : EditorWindow
 
         //繪製節點分支
         GUILayout.Label("節點分支", EditorStyles.boldLabel);
-
+        if (GUILayout.Button("+ 新增節點")) 
+        {
+            fileData[selectFile].Add("== new_knot");
+            getKnot(selectFile);
+        }
         if (GUILayout.Toggle(selectKnotIndex == -1, "全部顯示", "Button"))
         { 
             selectKnotIndex = -1; 
         }
         knotScroll = EditorGUILayout.BeginScrollView(knotScroll);
 
+        int indexToDelete = -1;
+
         if (!string.IsNullOrEmpty(selectFile) && fileKnots.ContainsKey(selectFile))
         {
             List<KnotData> knots = fileKnots[selectFile];
+            Event evt = Event.current;
+
             for (int i = 0; i < knots.Count; i++)
             {
+                Rect rowRect = EditorGUILayout.BeginHorizontal();
+
+                //拖曳時變色
+                GUI.backgroundColor = (isDraggingKnot && (draggedKnotIndex == i)) ? Color.cyan : ((isDraggingKnot && (targetKnotIndex == i)) ? Color.yellow : GUI.backgroundColor);
+
+                //拖曳把手
+                GUILayout.Label("≡", GUILayout.Width(20));
+                Rect handleRect = GUILayoutUtility.GetLastRect();
+
+                //節點按鈕
                 if (GUILayout.Toggle(selectKnotIndex == i, knots[i].name, "Button"))
                 {
-                    selectKnotIndex = i;
+                    if (selectKnotIndex != i)
+                    {
+                        GUI.FocusControl(null);
+                        selectKnotIndex = i;
+                    }
                 }
+
+                //刪除按鈕
+                if (GUILayout.Button("x", GUILayout.Width(20))) 
+                {
+                    indexToDelete = i;
+                }
+
+                EditorGUILayout.EndHorizontal();
+                GUI.backgroundColor = Color.white;
+
+                //拖曳邏輯偵測
+                if (evt.type == EventType.MouseDown && handleRect.Contains(evt.mousePosition))
+                {
+                    isDraggingKnot = true;
+                    draggedKnotIndex = i;
+                }
+                if (isDraggingKnot && rowRect.Contains(evt.mousePosition))
+                {
+                    targetKnotIndex = i;
+                }
+            }
+
+            //結束拖曳
+            if (evt.type == EventType.MouseUp && isDraggingKnot)
+            {
+                if (draggedKnotIndex != targetKnotIndex && targetKnotIndex != -1)
+                    moveKnotBlock(draggedKnotIndex, targetKnotIndex);
+
+                isDraggingKnot = false; draggedKnotIndex = -1; targetKnotIndex = -1;
+                Repaint();
+            }
+            //處理節點刪除
+            if (indexToDelete != -1)
+            {
+                deleteKnot(indexToDelete);
             }
         }
         EditorGUILayout.EndScrollView();
@@ -117,7 +181,7 @@ public class InkEditor : EditorWindow
         GUILayout.Label($"{Path.GetFileName(selectFile)}");
         if (GUILayout.Button("儲存", EditorStyles.toolbarButton, GUILayout.Width(50)))
         {
-            SaveAll();
+            saveAll();
         }
         GUILayout.EndHorizontal();
 
@@ -127,48 +191,46 @@ public class InkEditor : EditorWindow
         int start = (selectKnotIndex != -1) ? start = fileKnots[selectFile][selectKnotIndex].startLine : 0;
         int end = (selectKnotIndex != -1) ? end = fileKnots[selectFile][selectKnotIndex].endLine : lineList.Count;
 
-        int indexToMoveUp = -1;
-        int indexToMoveDown = -1;
         int indexToAddAfter = -1;
         int indexToDelete = -1;
 
         float viewWidth = Mathf.Max(430, position.width - 360);
 
+        Event evt = Event.current;
+
         //繪製文字內容
         for (int i = start; i < end; i++)
         {
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            Rect rect = EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
-            //繪製每行基礎按鈕
+            //判斷是否為節點
+            bool isKnot = lineList[i].Trim().StartsWith("==");
+
+            GUI.backgroundColor = (isDragging && (draggedIndex == i)) ? Color.cyan : ((isDragging && (targetIndex == i)) ? Color.yellow : Color.white);
             EditorGUILayout.BeginHorizontal();
 
-            //將文字和標籤分開
-            string content = lineList[i].Split('#')[0].TrimEnd();
-            string nameText = content.Contains(":") ? content.Split(":")[0].TrimEnd() : "";
-            string dialogText = content.Contains(":") ? content.Split(":")[1].TrimEnd() : content;
-
-            //節點變黃色
-            GUIStyle lineNumStyle = new GUIStyle(EditorStyles.miniLabel) { fixedWidth = 25 };
-            if (content.Trim().StartsWith("=="))
+            GUIStyle handleStyle = new GUIStyle(EditorStyles.label) { alignment = TextAnchor.MiddleCenter };
+            GUILayout.Label("≡", handleStyle, GUILayout.Width(20));
+            Rect handleRect = GUILayoutUtility.GetLastRect();
+            // 處理把手拖曳邏輯
+            if (evt.type == EventType.MouseDown && handleRect.Contains(evt.mousePosition))
             {
-                lineNumStyle.normal.textColor = Color.yellow;
+                isDragging = true;
+                draggedIndex = i;
+                evt.Use();
             }
-            GUILayout.Label($"{i + 1}", lineNumStyle);
 
-            //上下移動按鈕
-            GUI.enabled = i > start; //第一行不能往上
-            if (GUILayout.Button("▲", EditorStyles.miniButtonLeft, GUILayout.Width(20))) indexToMoveUp = i;
-            GUI.enabled = i < end - 1; //最後一行不能往下
-            if (GUILayout.Button("▼", EditorStyles.miniButtonRight, GUILayout.Width(20))) indexToMoveDown = i;
-            GUI.enabled = true;
+            // 顯示行號
+            GUIStyle lineNumStyle = new GUIStyle(EditorStyles.miniLabel) { fixedWidth = 25 };
+            if (lineList[i].Trim().StartsWith("==")) lineNumStyle.normal.textColor = Color.yellow;
+            GUILayout.Label($"{i + 1}", lineNumStyle);
 
             GUILayout.Space(5);
 
             //插入按鈕
             if (GUILayout.Button("+ 插入", EditorStyles.miniButton, GUILayout.Width(45))) indexToAddAfter = i;
-
-            //刪除按鈕
             GUI.contentColor = new Color(1f, 0.4f, 0.4f);
+            //刪除按鈕
             if (GUILayout.Button("刪除", EditorStyles.miniButton, GUILayout.Width(40))) indexToDelete = i;
             GUI.contentColor = Color.white;
 
@@ -177,22 +239,44 @@ public class InkEditor : EditorWindow
             //繪製每行內容
             EditorGUILayout.BeginHorizontal();
 
-            //計算文字框高度
-            float nameH = textAreaStyle.CalcHeight(new GUIContent(nameText), 60);
-            float maxNameH = Mathf.Max(20, nameH);
+            //初始化文字內容
+            string newNameText = "";
+            string newDialogText = "";
+            string newKnotName = "";
 
-            float dialogTextH = textAreaStyle.CalcHeight(new GUIContent(dialogText), viewWidth);
-            float maxDialogTextH = Mathf.Max(20, dialogTextH);
+            if (isKnot) //節點
+            {
+                string knotContent = lineList[i].Split('#')[0].Replace("==", "").Trim();
+                GUILayout.Label("節點名稱", EditorStyles.miniBoldLabel, GUILayout.Width(60)); 
+                GUI.SetNextControlName("KnotName_" + i);
+                newKnotName = EditorGUILayout.TextArea(knotContent, textAreaStyle, GUILayout.Height(20), GUILayout.ExpandWidth(true));
+            }
+            else //對話
+            {
+                //將文字和標籤分開
+                string content = lineList[i].Split('#')[0].TrimEnd();
+                string nameText = content.Contains(":") ? content.Split(":")[0].TrimEnd() : "";
+                string dialogText = content.Contains(":") ? content.Split(":")[1].TrimEnd() : content;
 
-            GUILayout.Label("名稱", EditorStyles.miniBoldLabel, GUILayout.Width(20));
-            string newNameText = EditorGUILayout.TextArea(nameText, textAreaStyle, GUILayout.Height(maxNameH), GUILayout.Width(60));
-            GUILayout.Label("對話", EditorStyles.miniBoldLabel, GUILayout.Width(20));
-            string newDialogText = EditorGUILayout.TextArea(dialogText, textAreaStyle, GUILayout.Height(maxDialogTextH), GUILayout.ExpandWidth(true));
+                //計算文字框高度
+                float nameH = textAreaStyle.CalcHeight(new GUIContent(nameText), 60);
+                float maxNameH = Mathf.Max(20, nameH);
+
+                float dialogTextH = textAreaStyle.CalcHeight(new GUIContent(dialogText), viewWidth);
+                float maxDialogTextH = Mathf.Max(20, dialogTextH); 
+                
+                GUILayout.Label("名稱", EditorStyles.miniBoldLabel, GUILayout.Width(25)); 
+                GUI.SetNextControlName("Name_" + i);
+                newNameText = EditorGUILayout.TextArea(nameText, textAreaStyle, GUILayout.Height(maxNameH), GUILayout.Width(60));
+                GUILayout.Label("對話", EditorStyles.miniBoldLabel, GUILayout.Width(25));
+                GUI.SetNextControlName("Dialog_" + i);
+                newDialogText = EditorGUILayout.TextArea(dialogText, textAreaStyle, GUILayout.Height(maxDialogTextH), GUILayout.ExpandWidth(true));
+            }
 
             //繪製添加標籤按鈕
             if (GUILayout.Button("+", GUILayout.Width(20)))
             {
-                ShowTagMenu(i);
+                showTagMenu(i);
             }
             EditorGUILayout.EndHorizontal();
 
@@ -226,7 +310,23 @@ public class InkEditor : EditorWindow
                             {
                                 System.Array.Resize(ref args, j + 1);
                             }
-                            args[j] = EditorGUILayout.TextField(args[j] ?? "", GUILayout.MinWidth(40), GUILayout.Height(16));
+
+                            if(cmd == "show" && schema[j] == "方向") 
+                            {
+                                string[] directionOptions = new string[] { "R", "L" };
+                                int selectedIndex = System.Array.IndexOf(directionOptions, args[j]);
+                                if (selectedIndex < 0)
+                                {
+                                    selectedIndex = 0;
+                                }
+
+                                selectedIndex = EditorGUILayout.Popup(selectedIndex, directionOptions, GUILayout.MinWidth(40), GUILayout.Height(16));
+                                args[j] = directionOptions[selectedIndex];
+                            }
+                            else 
+                            {
+                                args[j] = EditorGUILayout.TextField(args[j] ?? "", GUILayout.MinWidth(40), GUILayout.Height(16));
+                            }
                         }
                         tagList[t] = $"{cmd}:{string.Join(",", args)}";
                     }
@@ -250,7 +350,7 @@ public class InkEditor : EditorWindow
             {
                 tagList.RemoveAt(tagToDelete);
             }
-            string finalLine = (newNameText == "") ? newDialogText : newNameText + ":" + newDialogText;
+            string finalLine = isKnot ? ("== " + newKnotName) : ((newNameText == "") ? newDialogText : newNameText + ":" + newDialogText);
             foreach (var t in tagList)
             {
                 finalLine += " #" + t;
@@ -262,37 +362,85 @@ public class InkEditor : EditorWindow
             }
 
             EditorGUILayout.EndVertical();
+            GUI.backgroundColor = Color.white;
+
+            //判斷拖曳目標位置
+            if (isDragging && rect.Contains(evt.mousePosition))
+            {
+                targetIndex = i;
+            }
         }
 
-        // --- 執行列表變更作業 ---
-        if (indexToMoveUp != -1)
+        //拖曳結束處理
+        if (evt.type == EventType.MouseDrag && isDragging)
         {
-            string temp = lineList[indexToMoveUp];
-            lineList.RemoveAt(indexToMoveUp);
-            lineList.Insert(indexToMoveUp - 1, temp);
+            Repaint();
         }
-        if (indexToMoveDown != -1)
+
+        if (evt.type == EventType.MouseUp && isDragging)
         {
-            string temp = lineList[indexToMoveDown];
-            lineList.RemoveAt(indexToMoveDown);
-            lineList.Insert(indexToMoveDown + 1, temp);
+            if (draggedIndex != targetIndex && targetIndex != -1)
+            {
+                string item = lineList[draggedIndex];
+                lineList.RemoveAt(draggedIndex);
+                lineList.Insert(targetIndex, item);
+                getKnot(selectFile);
+            }
+            isDragging = false;
+            draggedIndex = -1;
+            targetIndex = -1;
+            evt.Use();
         }
+
+        //處理插入與刪除
         if (indexToAddAfter != -1)
         {
             lineList.Insert(indexToAddAfter + 1, ":");
         }
         if (indexToDelete != -1)
         {
+            GUI.FocusControl(null);
             lineList.RemoveAt(indexToDelete);
         }
-        getKnot(selectFile); // 重新計算節點位置
+        getKnot(selectFile); //重新計算節點位置
         Repaint();
         EditorGUILayout.EndScrollView();
     }
-
-    private void drawContent(int i, List<string> lineList)
+    private void moveKnotBlock(int from, int to)
     {
+        var knots = fileKnots[selectFile];
+        var lines = fileData[selectFile];
 
+        KnotData source = knots[from];
+        int length = source.endLine - source.startLine;
+
+        // 取出區塊
+        var block = lines.GetRange(source.startLine, length);
+        lines.RemoveRange(source.startLine, length);
+
+        // 插入區塊
+        int insertPos = (to > from) ? knots[to].endLine - length : knots[to].startLine;
+        lines.InsertRange(insertPos, block);
+
+        getKnot(selectFile);
+        selectKnotIndex = to; // 更新選取位置
+    }
+
+    private void deleteKnot(int index)
+    {
+        if (!EditorUtility.DisplayDialog("確認", "確定要刪除整個節點嗎？", "是", "否")) 
+            return;
+
+        var knots = fileKnots[selectFile];
+        var lines = fileData[selectFile];
+
+        int length = knots[index].endLine - knots[index].startLine;
+        lines.RemoveRange(knots[index].startLine, length);
+
+        selectKnotIndex = -1;
+
+        getKnot(selectFile);
+        Repaint();
     }
 
     private List<string> getLineTag(string line)
@@ -306,7 +454,7 @@ public class InkEditor : EditorWindow
         return tagList;
     }
 
-    private void ShowTagMenu(int lineIndex)
+    private void showTagMenu(int lineIndex)
     {
         GenericMenu menu = new GenericMenu();
         foreach (var def in tagCommand)
@@ -400,29 +548,31 @@ public class InkEditor : EditorWindow
         for (int i = 0; i < lineList.Count; i++)
         {
             //取得節點
-            Match m = Regex.Match(lineList[i], @"^\s*==+\s*([a-zA-Z0-9_]+)");
+            Match m = Regex.Match(lineList[i], @"^\s*==+\s*([a-zA-Z0-9_]*)");
 
-            //保留，可能會改，目前為獲取節點到下一節點之間每一行
             if (m.Success)
             {
-                if (knotList.Count > 0) 
+                //如果名稱是空的，給它一個預設值
+                string knotName = string.IsNullOrEmpty(m.Groups[1].Value) ? "Unnamed_Knot" : m.Groups[1].Value;
+
+                if (knotList.Count > 0)
                 {
                     KnotData last = knotList[knotList.Count - 1];
                     last.endLine = i;
                     knotList[knotList.Count - 1] = last;
                 }
-                knotList.Add(new KnotData 
-                    { 
-                        name = m.Groups[1].Value,
-                        startLine = i,
-                        endLine = lineList.Count 
-                    });
+                knotList.Add(new KnotData
+                {
+                    name = knotName,
+                    startLine = i,
+                    endLine = lineList.Count
+                });
             }
         }
         fileKnots[path] = knotList;
     }
 
-    private void SaveAll()
+    private void saveAll()
     {
         foreach (var kvp in fileData) File.WriteAllLines(kvp.Key, kvp.Value.ToArray());
         AssetDatabase.Refresh();

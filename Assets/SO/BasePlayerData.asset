@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 770c80f180a063a448de26c0abbd2b7b, type: 3}
-  m_Name: PlayerData
+  m_Name: BasePlayerData
   m_EditorClassIdentifier: 
   image: {fileID: 21300000, guid: 9078af55b5523854b85d3c8c1b3c2ebb, type: 3}
   battleImage: {fileID: 0}
