@@ -29,3 +29,4 @@ MonoBehaviour:
   curMagic:
   - 1
   item: []
+  developRound: 0

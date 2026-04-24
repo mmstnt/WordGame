@@ -13263,7 +13263,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "111\u5E74 1\u6708 - \u4E0A\u65EC"
+  m_text: "\u555F\u660E 22\u5E74 1\u6708 - \u521D"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 39644d27930d79d4ea5b39c4e04166cd, type: 2}
   m_sharedMaterial: {fileID: -613928015217281242, guid: 39644d27930d79d4ea5b39c4e04166cd, type: 2}
@@ -16728,6 +16728,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a99cbad4d5e7e83479b122eb026912f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  developRoundTextGameObject: {fileID: 1478804286}
 --- !u!4 &2026522602
 Transform:
   m_ObjectHideFlags: 0
