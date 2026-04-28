@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class BattleButton : MonoBehaviour, ISelectHandler, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler, IDeselectHandler
+public class ButtonUpdata : MonoBehaviour, ISelectHandler, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler, IDeselectHandler
 {
     public Graphic[] childGraphics;
     public Color normalColor;
@@ -11,7 +11,7 @@ public class BattleButton : MonoBehaviour, ISelectHandler, IPointerEnterHandler,
     public Color selectedColor;
 
     [Header("¼s¼½")]
-    public VoidEventSO battleButtonUpdataEvent;
+    public VoidEventSO buttonUpdataEvent;
 
     private void OnEnable()
     {
@@ -27,7 +27,7 @@ public class BattleButton : MonoBehaviour, ISelectHandler, IPointerEnterHandler,
         if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject == this.gameObject)
         {
             ChangeColor(selectedColor);
-            battleButtonUpdataEvent?.raiseEvent();
+            buttonUpdataEvent?.raiseEvent();
         }
         else
         {
@@ -38,7 +38,7 @@ public class BattleButton : MonoBehaviour, ISelectHandler, IPointerEnterHandler,
     public void OnSelect(BaseEventData eventData)
     {
         ChangeColor(selectedColor);
-        battleButtonUpdataEvent?.raiseEvent();
+        buttonUpdataEvent?.raiseEvent();
     }
 
     public void OnDeselect(BaseEventData eventData)

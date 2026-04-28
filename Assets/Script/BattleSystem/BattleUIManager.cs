@@ -244,7 +244,7 @@ public class BattleUIManager : MonoBehaviour
 
             GameObject skillButton = Instantiate(skillButtonGameObject, skillGroup);
             skillButton.GetComponent<RectTransform>().anchoredPosition = site;
-            skillButton.GetComponent<BattleButton>().battleButtonUpdataEvent = battleButtonUpdataEvent;
+            skillButton.GetComponent<ButtonUpdata>().buttonUpdataEvent = battleButtonUpdataEvent;
             skillButton.GetComponent<BattleSkillButton>().initialize(skillID);
             skillButton.GetComponent<Button>().onClick.AddListener
                 (

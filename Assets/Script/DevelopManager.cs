@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -5,11 +6,55 @@ using UnityEngine;
 
 public class DevelopManager : MonoBehaviour
 {
+    [Header("∫ ≈•")]
+    public StringEventSO developActionEvent;
+
     public TMP_Text developRoundTextGameObject;
 
     private void Awake()
     {
         UIUpdata();
+    }
+
+    private void OnEnable()
+    {
+        developActionEvent.onEventRaised += onDevelopActionEvent;
+    }
+
+    private void OnDisable()
+    {
+        developActionEvent.onEventRaised -= onDevelopActionEvent;
+    }
+
+    private void onDevelopActionEvent(string actionEvent)
+    {
+        switch (actionEvent) 
+        {
+            case "Exercise":
+                Debug.Log(actionEvent);
+                break;
+            case "Martial":
+                Debug.Log(actionEvent);
+                break;
+            case "Research":
+                Debug.Log(actionEvent);
+                break;
+            case "Craft":
+                Debug.Log(actionEvent);
+                break;
+            case "Livelihood":
+                Debug.Log(actionEvent);
+                break;
+            case "Store":
+                Debug.Log(actionEvent);
+                break;
+            case "Socializing":
+                Debug.Log(actionEvent);
+                break;
+            case "Rest":
+                Debug.Log(actionEvent);
+                break;
+        }
     }
 
     public void UIUpdata() 
