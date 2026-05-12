@@ -9,4 +9,5 @@ public class PlayerDataSO : BaseUnitSO
     
     [Header("¾i¦¨¸ê°T")]
     public int developRound;
+    public int developActionPoint;
 }

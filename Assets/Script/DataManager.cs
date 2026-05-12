@@ -13,6 +13,7 @@ public class DataManager : MonoBehaviour
     public BattleDataListSO battleDataList;
     public UnitDataListSO unitDataList;
     public SkillDataListSO skillDataList;
+    public DevelopEventDataListSO developEventDataList;
 
     [Header("¸ê®Æ")]
     public PlayerDataSO playerData;
