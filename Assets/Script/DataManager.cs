@@ -14,6 +14,7 @@ public class DataManager : MonoBehaviour
     public UnitDataListSO unitDataList;
     public SkillDataListSO skillDataList;
     public DevelopEventDataListSO developEventDataList;
+    public ProficiencyDataListSO proficiencyDataList;
 
     [Header("¸ê®Æ")]
     public PlayerDataSO playerData;

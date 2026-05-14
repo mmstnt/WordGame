@@ -14,8 +14,11 @@ public class DevelopManager : MonoBehaviour
     public VoidEventSO developButtonUpdataEvent;
 
     [Header("²Õ¥ó")]
+    public Transform DevelopInterface;
+    public Transform ExerciseInterface;
     public Transform actionPointGrounp;
     public Transform selectEventNeedPointGrounp;
+    public Image background;
     public Image selectEventImage;
     public TMP_Text developRoundTextGameObject;
     public TMP_Text actionTextGameObject;
@@ -24,8 +27,14 @@ public class DevelopManager : MonoBehaviour
     public TMP_Text selectEventNeedGameObject;
     public GameObject actionPointGameObjecct;
 
+    private Transform curInterface;
+    private GameObject curDevelopButton;
+
     private void Awake()
     {
+        curInterface = DevelopInterface;
+        background.sprite = DataManager.instance.backgroundImageDataList.getData("B00001");
+        switchInterface(DevelopInterface);
         UIUpdata();
     }
 
@@ -43,39 +52,58 @@ public class DevelopManager : MonoBehaviour
 
     private void onDevelopActionEvent(string actionEvent)
     {
+        string selectEventID = "";
+        curDevelopButton = EventSystem.current?.currentSelectedGameObject;
+        if (curDevelopButton != null && curDevelopButton.TryGetComponent<DevelopButton>(out DevelopButton curSelectButton))
+        {
+            selectEventID = curSelectButton.DevelopEventID;
+            DevelopEventDataSO selectEvent = DataManager.instance.developEventDataList.getData(selectEventID);
+            if (selectEvent.actionPoint > DataManager.instance.playerData.developActionPoint) 
+            {
+                return;
+            }
+            else 
+            {
+                DataManager.instance.playerData.developActionPoint -= selectEvent.actionPoint;
+                UIUpdata();
+            }
+        }
+        Debug.Log(selectEventID);
+
         switch (actionEvent) 
         {
             case "Exercise":
-                Debug.Log(actionEvent);
+                switchInterface(ExerciseInterface);
+                background.sprite = DataManager.instance.backgroundImageDataList.getData("B00002");
                 break;
             case "Martial":
-                Debug.Log(actionEvent);
+                background.sprite = DataManager.instance.backgroundImageDataList.getData("B00003");
                 break;
             case "Research":
-                Debug.Log(actionEvent);
+                background.sprite = DataManager.instance.backgroundImageDataList.getData("B00004");
                 break;
             case "Craft":
-                Debug.Log(actionEvent);
                 break;
             case "Livelihood":
-                Debug.Log(actionEvent);
                 break;
             case "Store":
-                Debug.Log(actionEvent);
                 break;
             case "Socializing":
-                Debug.Log(actionEvent);
                 break;
             case "Rest":
                 roundEnd();
-                Debug.Log(actionEvent);
+                break;
+            case "Back":
+                switchInterface(DevelopInterface);
+                break;
+            default:
                 break;
         }
     }
 
     public void UIUpdata() 
     {
-        GameObject curDevelopButton = EventSystem.current?.currentSelectedGameObject;
+        curDevelopButton = EventSystem.current?.currentSelectedGameObject;
         int round = DataManager.instance.playerData.developRound;
         int actionPoint = DataManager.instance.playerData.developActionPoint;
         int needActionPoint = 0;
@@ -119,6 +147,14 @@ public class DevelopManager : MonoBehaviour
     public void onDevelopButtonUpdataEvent() 
     {
         UIUpdata();
+    }
+
+    private void switchInterface(Transform newInterface) 
+    {
+        curInterface.gameObject.SetActive(false);
+
+        curInterface = newInterface;
+        curInterface.gameObject.SetActive(true);
     }
 
     private void updataUIPoint(Transform UIGrounp, int curPoint, int needPoint, string pointImageID, string nullPointImageID, string prePointImageID)

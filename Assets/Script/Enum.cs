@@ -20,3 +20,10 @@ public enum BattleFaction
     Player,
     Enemy
 }
+
+public enum ProficiencyType
+{
+    Exercise,
+    Martial,
+    Research
+}

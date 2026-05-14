@@ -15,3 +15,9 @@ MonoBehaviour:
   dataList:
   - id: B00001
     data: {fileID: 21300000, guid: 8479996bad7d204448819b57358108b7, type: 3}
+  - id: B00002
+    data: {fileID: 21300000, guid: 2e3382599622df04cab105905309ba72, type: 3}
+  - id: B00003
+    data: {fileID: 21300000, guid: 26278dd3b5817eb489ae840cbc8b7758, type: 3}
+  - id: B00004
+    data: {fileID: 21300000, guid: 7e329359c42d5f947b35ff2f502e6179, type: 3}
