@@ -1,5 +1,6 @@
 using Ink.Parsed;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using static ProficiencyDataSO;
 
@@ -20,6 +21,15 @@ public class PlayerDataSO : BaseUnitSO
     {
         public int curExp;
         public string id;
+    }
+
+    public List<string> getProficiencyIDList(ProficiencyType type)
+    {
+        List<string> idList = proficiencyList
+        .Where(l => type == DataManager.instance.proficiencyDataList.getData(l.id).type)
+        .Select(l => l.id).ToList();
+
+        return idList;
     }
 
     private void OnValidate()

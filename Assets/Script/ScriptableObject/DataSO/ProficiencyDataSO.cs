@@ -35,7 +35,7 @@ public class ProficiencyDataSO : ScriptableObject
     {
         allEffect = GetFullEffectDescription();
     }
-
+    //記得重修以下代碼
     public string GetFullEffectDescription()
     {
         if (levelSettings == null || levelSettings.Count == 0) return "無效果";

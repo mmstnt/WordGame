@@ -1,5 +1,7 @@
 public enum Attribute
 {
+    HP,
+    MP,
     Strength,
     Dexterity,
     Constitution,
