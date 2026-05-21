@@ -14,8 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   proficiencyName: "\u57FA\u790E\u751F\u547D"
   description: 
-  allEffect: "\u3010\u5168\u7B49\u7D1A\u6548\u679C\u3011\n\u6EFF\u7D1A\u7D93\u9A57\u9700\u6C42:2570\nHP:
-    120\n"
+  allEffect: "\u3010\u5168\u7B49\u7D1A\u6548\u679C\u3011\n\u6EFF\u7D1A\u7D93\u9A57\u9700\u6C42:2570\n\u751F\u547D+120\n"
   image: {fileID: 21300000, guid: e04beca4e30b3f4438c720f798209d6c, type: 3}
   type: 0
   levelSettings:

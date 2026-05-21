@@ -343,11 +343,11 @@ public class BattleUIManager : MonoBehaviour
         }
     }
 
-    private void clearUIGrounp(Transform UIGrounp) 
+    private void clearUIGrounp(Transform UIGroup) 
     {
-        for (int i = UIGrounp.childCount - 1; i >= 0; i--)
+        for (int i = UIGroup.childCount - 1; i >= 0; i--)
         {
-            GameObject UIGameObject = UIGrounp.GetChild(i).gameObject;
+            GameObject UIGameObject = UIGroup.GetChild(i).gameObject;
             UIGameObject.transform.SetParent(null);
             Destroy(UIGameObject);
         }

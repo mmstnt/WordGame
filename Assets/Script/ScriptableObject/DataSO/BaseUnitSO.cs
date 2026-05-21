@@ -5,6 +5,8 @@ public abstract class BaseUnitSO : ScriptableObject
     public Sprite image;
     public Sprite battleImage;
 
+    public int hp;
+    public int mp;
     public int strength;
     public int dexterity;
     public int constitution;

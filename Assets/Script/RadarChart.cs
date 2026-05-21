@@ -1,58 +1,83 @@
+ï»¿using Ink.Parsed;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class RadarChart : MaskableGraphic
 {
-    public float[] values;
-    public float radius;
+    [Header("åƒæ•¸")]
+    public float[] valueMax = new float[8];
+    public float radiu;
 
-    public void SetValues(float[] newValues)
+    [Header("çµ„ä»¶")]
+    public Transform attributeImageGroup;
+
+    private float[] value;
+
+    public void setValue(int[] newValue,string[] newValueImage)
     {
-        this.values = newValues;
-        SetVerticesDirty(); // ÅX°Ê UGUI ­«·sÃ¸»s
+        this.value = new float[newValue.Length];
+        for(int i = 0; i < newValue.Length; i++) 
+        {
+            this.value[i] = newValue[i] / valueMax[i];
+        }
+        updateAttributeImage(attributeImageGroup, newValueImage);
+
+        //é‡æ–°ç¹ªè£½UI
+        SetVerticesDirty();
+    }
+
+    private void updateAttributeImage(Transform UIGroup, string[] newValueImage)
+    {
+        for (int i = UIGroup.childCount - 1; i >= 0; i--)
+        {
+            Image attributeImage = UIGroup.GetChild(i).GetComponent<Image>();
+            attributeImage.sprite = DataManager.instance.uiImageDataList.getData(newValueImage[i]);
+        }
     }
 
     protected override void OnPopulateMesh(VertexHelper vh)
     {
         vh.Clear();
 
-        if (values == null || values.Length < 3) return;
+        if (value == null || value.Length < 3) return;
 
-        //³]©wÃä¼Æ©M¨¤«×
-        int side = values.Length;
-        float angle = 360f / side;
-
-        float cosFactor = Mathf.Cos((angle / 2f) * Mathf.Deg2Rad);
-        float compensationFactor = (cosFactor > 0.001f) ? (1f / cosFactor) : 1f;
-        float adjustedMaxRadius = radius * compensationFactor;
-        // 1. ²K¥[¤¤¤ßÂI (Index: 0)
         UIVertex center = UIVertex.simpleVert;
         center.color = this.color;
         center.position = Vector3.zero;
         vh.AddVert(center);
 
-        // 2. ­pºâ¨Ã²K¥[¦U­ÓÄİ©Êªº³»ÂI
+        //è¨­å®šé‚Šæ•¸å’Œè§’åº¦
+        int side = value.Length;
+        float angle = 360f / side;
+
+        float cosFactor = Mathf.Cos((angle / 2f) * Mathf.Deg2Rad);
+        float compensationFactor = (cosFactor > 0.001f) ? (1f / cosFactor) : 1f;
+        float adjustedMaxRadius = radiu * compensationFactor;
+
+        // 2. è¨ˆç®—ä¸¦æ·»åŠ å„å€‹å±¬æ€§çš„é ‚é»
         for (int i = 0; i < side; i++)
         {
-            float currentAngle = (i * angle + (angle / 2f)) * Mathf.Deg2Rad;
+            float currentAngle = (-90 + i * angle + (angle / 2f)) * Mathf.Deg2Rad;
 
-            // ¨Ì¾ÚÄİ©Ê¼Æ­È¤ñ¨Ò­pºâ¹ê»Ú¥b®|
-            float currentRadiu = adjustedMaxRadius * Mathf.Clamp01(values[i]);
+            // ä¾æ“šå±¬æ€§æ•¸å€¼æ¯”ä¾‹è¨ˆç®—å¯¦éš›åŠå¾‘
+            float currentRadiu = adjustedMaxRadius * Mathf.Clamp01(value[i]);
 
-            float x = Mathf.Sin(currentAngle) * currentRadiu;
-            float y = Mathf.Cos(currentAngle) * currentRadiu;
+            float x = Mathf.Sin(currentAngle);
+            float y = Mathf.Cos(currentAngle);
 
             UIVertex vertex = UIVertex.simpleVert;
             vertex.color = this.color;
-            vertex.position = new Vector2(x, y);
+            vertex.position = new Vector2(x * currentRadiu, y * currentRadiu);
             vh.AddVert(vertex);
         }
 
-        // 3. ®Ú¾Ú³»ÂI¶¶§Ç³s±µ¦¨¤T¨¤§Î­±
+        // 3. æ ¹æ“šé ‚é»é †åºé€£æ¥æˆä¸‰è§’å½¢é¢
         for (int i = 1; i <= side; i++)
         {
             int next = (i == side) ? 1 : i + 1;
-            vh.AddTriangle(0, i, next); // ¤¤¤ßÂI¡B·í«eÂI¡B¤U¤@­ÓÂI
+            vh.AddTriangle(0, i, next); // ä¸­å¿ƒé»ã€ç•¶å‰é»ã€ä¸‹ä¸€å€‹é»
         }
     }
+
 }

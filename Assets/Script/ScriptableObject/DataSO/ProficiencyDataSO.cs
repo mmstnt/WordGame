@@ -82,6 +82,8 @@ public class ProficiencyDataSO : ScriptableObject
     {
         switch (effectType)
         {
+            case Attribute.HP: return $"生命+{value}";
+            case Attribute.MP: return $"能量+{value}";
             case Attribute.Strength: return $"力量+{value}";
             case Attribute.Dexterity: return $"敏捷+{value}";
             case Attribute.Constitution: return $"體質+{value}";
