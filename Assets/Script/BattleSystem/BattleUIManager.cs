@@ -247,13 +247,13 @@ public class BattleUIManager : MonoBehaviour
             skillButton.GetComponent<ButtonUpdata>().buttonUpdataEvent = battleButtonUpdataEvent;
             skillButton.GetComponent<BattleSkillButton>().initialize(skillID);
             skillButton.GetComponent<Button>().onClick.AddListener
-                (
+            (
                 delegate
                 {
                     onRecordLastButtonEvent(index);
                     castSkillEvent.onEventRaised(skillID);
                 }
-                );
+            );
         }
     }
 

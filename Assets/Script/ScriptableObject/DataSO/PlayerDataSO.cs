@@ -1,6 +1,7 @@
 using Ink.Parsed;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml;
 using UnityEngine;
 using static ProficiencyDataSO;
 
@@ -15,14 +16,45 @@ public class PlayerDataSO : BaseUnitSO
     public int developRound;
     public int developActionPoint;
     public List<Proficiency> proficiencyList;
+    public Dictionary<string, Proficiency> proficiencyIndexDic = new Dictionary<string, Proficiency>();
 
     private Dictionary<Attribute, Dictionary<string, int>> attributeSourceDic = new Dictionary<Attribute, Dictionary<string, int>>();
 
     [System.Serializable]
-    public struct Proficiency 
+    public class Proficiency 
     {
-        public int curExp;
         public string id;
+        public int allExp;
+        public int curLevel;
+        public int curExp;
+    }
+
+    private void OnValidate()
+    {
+        //getAllProficiency();
+    }
+
+    public void addProficiencyExp(string id, int addExp) 
+    {
+        ProficiencyDataSO proficiencyDataSO = DataManager.instance.proficiencyDataList.getData(id);
+        if (proficiencyIndexDic[id].curLevel >= proficiencyDataSO.levelSettings.Count)
+            return;
+
+        proficiencyIndexDic[id].allExp += addExp;
+        getAllProficiency();
+    }
+
+    public int getAllAttribute() 
+    {
+        int allAttribute = 0;
+        allAttribute += this.strength;
+        allAttribute += this.dexterity;
+        allAttribute += this.constitution;
+        allAttribute += this.intelligence;
+        allAttribute += this.wisdom;
+        allAttribute += this.charisma;
+
+        return allAttribute;
     }
 
     public List<string> getProficiencyIDList(ProficiencyType type)
@@ -32,11 +64,6 @@ public class PlayerDataSO : BaseUnitSO
         .Select(l => l.id).ToList();
 
         return idList;
-    }
-
-    private void OnValidate()
-    {
-        //getAllProficiency();
     }
 
     public string getAttributeSource(Attribute attributeType) 
@@ -67,6 +94,8 @@ public class PlayerDataSO : BaseUnitSO
     public void getAllProficiency() 
     {
         attributeSourceDic.Clear();
+        proficiencyIndexDic.Clear();
+
         attributeSourceDic[Attribute.HP] = new Dictionary<string, int>();
         attributeSourceDic[Attribute.MP] = new Dictionary<string, int>();
         attributeSourceDic[Attribute.Strength] = new Dictionary<string, int>();
@@ -83,28 +112,37 @@ public class PlayerDataSO : BaseUnitSO
         this.wisdom = 0;
         this.charisma = 0;
 
-        foreach (Proficiency proficiency in proficiencyList) 
+        //取得所有修練項
+        for (int i = 0; i < proficiencyList.Count; i++) 
         {
-            ProficiencyDataSO curProficiency = DataManager.instance.proficiencyDataList.getData(proficiency.id);
-            int curProficiencyExp = proficiency.curExp;
+            ProficiencyDataSO curProficiency = DataManager.instance.proficiencyDataList.getData(proficiencyList[i].id);
+            proficiencyIndexDic[proficiencyList[i].id] = proficiencyList[i];
+            
+            int curProficiencyAllExp = proficiencyList[i].allExp;
             int curProficiencyLevel = 0;
 
-            for (int i = 0; i < curProficiency.levelSettings.Count; i++) 
+            //計算當前等級
+            for (int j = 0; j < curProficiency.levelSettings.Count; j++) 
             {
-                if (curProficiencyExp < curProficiency.levelSettings[i].needExp) 
+                if (curProficiencyAllExp < curProficiency.levelSettings[j].needExp) 
                 {
                     break;
                 }
                 else 
                 {
-                    curProficiencyExp -= curProficiency.levelSettings[i].needExp;
+                    curProficiencyAllExp -= curProficiency.levelSettings[j].needExp;
                 }
-                curProficiencyLevel = i + 1;
+                curProficiencyLevel = j + 1;
             }
 
-            for(int i = 0; i < curProficiencyLevel; i++) 
+            proficiencyList[i].curLevel = curProficiencyLevel;
+            proficiencyList[i].curExp = curProficiencyAllExp;
+
+            //取得所有等級屬性
+            for (int j = 0; j < curProficiencyLevel; j++) 
             {
-                foreach(ProficiencyEffectData levelEffect in curProficiency.levelSettings[i].effects)
+                //取得該等級所有屬性
+                foreach(ProficiencyEffectData levelEffect in curProficiency.levelSettings[j].effects)
                 {
                     getProficiencyAttribute(levelEffect.type, levelEffect.value, curProficiency.proficiencyName);
                 }
@@ -112,9 +150,9 @@ public class PlayerDataSO : BaseUnitSO
         }
     }
 
-    private void getProficiencyAttribute(Attribute effectType, string value, string attributeSourceName) 
+    private void getProficiencyAttribute(Attribute attributeType, string value, string attributeSourceName) 
     {
-        switch (effectType)
+        switch (attributeType)
         {
             case Attribute.HP:              this.hp += int.Parse(value);            break;
             case Attribute.MP:              this.mp += int.Parse(value);            break;
@@ -126,13 +164,13 @@ public class PlayerDataSO : BaseUnitSO
             case Attribute.Charisma:        this.charisma += int.Parse(value);      break;
         }
 
-        if (attributeSourceDic[effectType].ContainsKey(attributeSourceName)) 
+        if (attributeSourceDic[attributeType].ContainsKey(attributeSourceName)) 
         {
-            attributeSourceDic[effectType][attributeSourceName] += int.Parse(value);
+            attributeSourceDic[attributeType][attributeSourceName] += int.Parse(value);
         }
         else
         {
-            attributeSourceDic[effectType][attributeSourceName] = int.Parse(value);
+            attributeSourceDic[attributeType][attributeSourceName] = int.Parse(value);
         }
     }
 }

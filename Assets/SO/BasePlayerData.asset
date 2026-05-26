@@ -14,12 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   image: {fileID: 21300000, guid: 9078af55b5523854b85d3c8c1b3c2ebb, type: 3}
   battleImage: {fileID: 0}
-  hp: 478
-  mp: 480
-  strength: 30
-  dexterity: 30
-  constitution: 30
-  intelligence: 30
+  hp: 0
+  mp: 0
+  strength: 0
+  dexterity: 0
+  constitution: 0
+  intelligence: 0
   wisdom: 0
   charisma: 0
   curMartial:
@@ -34,19 +34,35 @@ MonoBehaviour:
   developRound: 0
   developActionPoint: 0
   proficiencyList:
-  - curExp: 2570
-    id: PR00001
-  - curExp: 2570
-    id: PR00002
-  - curExp: 2570
-    id: PR00003
-  - curExp: 2570
-    id: PR00004
-  - curExp: 2570
-    id: PR00005
-  - curExp: 2570
-    id: PR00006
-  - curExp: 500
-    id: PR00007
-  - curExp: 0
-    id: PR00008
+  - id: PR00001
+    allExp: 0
+    curLevel: 0
+    curExp: 2570
+  - id: PR00002
+    allExp: 0
+    curLevel: 0
+    curExp: 2570
+  - id: PR00003
+    allExp: 0
+    curLevel: 0
+    curExp: 2570
+  - id: PR00004
+    allExp: 0
+    curLevel: 0
+    curExp: 2570
+  - id: PR00005
+    allExp: 0
+    curLevel: 0
+    curExp: 2570
+  - id: PR00006
+    allExp: 0
+    curLevel: 0
+    curExp: 2570
+  - id: PR00007
+    allExp: 0
+    curLevel: 0
+    curExp: 500
+  - id: PR00008
+    allExp: 0
+    curLevel: 0
+    curExp: 0

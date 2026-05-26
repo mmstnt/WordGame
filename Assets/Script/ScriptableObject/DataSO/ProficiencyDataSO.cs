@@ -9,6 +9,7 @@ public class ProficiencyDataSO : ScriptableObject
     public string proficiencyName; 
     [TextArea(5, 10)]
     public string description;
+    public string allNeedExp;
     [TextArea(3, 10)]
     public string allEffect;
 
@@ -33,52 +34,81 @@ public class ProficiencyDataSO : ScriptableObject
 
     private void OnValidate()
     {
-        allEffect = GetFullEffectDescription();
+        allEffect = getFullEffectDescription(0,999);
+        allNeedExp = getFullEffectExp(0, 999, 0);
     }
-    //記得重修以下代碼
-    public string GetFullEffectDescription()
+
+    public float getNeedExp(int getMinLevel, int getMaxLevel) 
     {
-        if (levelSettings == null || levelSettings.Count == 0) return "無效果";
+        if (levelSettings == null || levelSettings.Count == 0) return 0f;
+        if (getMaxLevel > levelSettings.Count) return 1f;
 
-        Dictionary<Attribute, int> aggregatedAttributes = new Dictionary<Attribute, int>();
-        List<string> specialEffects = new List<string>();
-        int allExp = 0;
-
-        foreach (var level in levelSettings)
+        float allExp = 0;
+        for (int i = Mathf.Max(getMinLevel - 1, 0); i < Mathf.Min(getMaxLevel, levelSettings.Count); i++)
         {
-            allExp += level.needExp;
-            foreach (var effect in level.effects)
+            allExp += levelSettings[i].needExp;
+        }
+
+        return allExp;
+    }
+
+    public string getFullEffectExp(int getMinLevel, int getMaxLevel, int curExp)
+    {
+        if (levelSettings == null || levelSettings.Count == 0) return "無等級";
+        if (getMaxLevel > levelSettings.Count) return "已滿級";
+
+        int allExp = 0;
+        for (int i = Mathf.Max(getMinLevel - 1, 0); i < Mathf.Min(getMaxLevel, levelSettings.Count); i++)
+        {
+            allExp += levelSettings[i].needExp;
+        }
+
+        return $"{curExp} / {allExp}";
+    }
+
+    public string getFullEffectDescription(int getMinLevel,int getMaxLevel)
+    {
+        if (levelSettings == null || levelSettings.Count == 0 || getMaxLevel <= 0) return "無效果";
+        if (getMaxLevel > levelSettings.Count) return "已滿級";
+
+        Dictionary<Attribute, int> attributeDic = new Dictionary<Attribute, int>();
+        List<string> otherEffectList = new List<string>();
+
+        //取得所有等級效果
+        for (int i = Mathf.Max(getMinLevel - 1, 0); i < Mathf.Min(getMaxLevel, levelSettings.Count); i++) 
+        {
+            foreach (ProficiencyEffectData effect in levelSettings[i].effects)
             {
-                if (int.TryParse(effect.value, out int val))
+                if (int.TryParse(effect.value, out int value))
                 {
-                    if (aggregatedAttributes.ContainsKey(effect.type))
-                        aggregatedAttributes[effect.type] += val;
+                    if (attributeDic.ContainsKey(effect.type))
+                        attributeDic[effect.type] += value;
                     else
-                        aggregatedAttributes[effect.type] = val;
+                        attributeDic[effect.type] = value;
                 }
                 else
                 {
-                    string desc = FormatEffectText(effect.type, effect.value);
-                    if (!specialEffects.Contains(desc)) specialEffects.Add(desc);
+                    string desc = formatEffectText(effect.type, effect.value);
+                    if (!otherEffectList.Contains(desc))
+                        otherEffectList.Add(desc);
                 }
             }
         }
 
-        string result = $"【全等級效果】\n";
-        result += $"滿級經驗需求:{allExp}\n";
-        foreach (var kvp in aggregatedAttributes)
+        string result = "";
+        foreach (var attribute in attributeDic)
         {
-            result += $"{FormatEffectText(kvp.Key, kvp.Value.ToString())}\n";
+            result += $"{formatEffectText(attribute.Key, attribute.Value.ToString())}\n";
         }
-        foreach (var spec in specialEffects)
+        foreach (var otherEffect in otherEffectList)
         {
-            result += $"{spec}\n";
+            result += $"{otherEffect}\n";
         }
 
         return result;
     }
 
-    public string FormatEffectText(Attribute effectType, string value)
+    public string formatEffectText(Attribute effectType, string value)
     {
         switch (effectType)
         {
