@@ -32,10 +32,7 @@ public class DevelopManager : MonoBehaviour
 
     private void Awake()
     {
-        curInterface = DevelopInterface;
-        background.sprite = DataManager.instance.backgroundImageDataList.getData("B00001");
-        switchInterface(DevelopInterface);
-        UIUpdata();
+        initialize();
     }
 
     private void OnEnable()
@@ -48,6 +45,14 @@ public class DevelopManager : MonoBehaviour
     {
         developActionEvent.onEventRaised -= onDevelopActionEvent;
         developButtonUpdataEvent.onEventRaised -= onDevelopButtonUpdataEvent;
+    }
+
+    public void initialize() 
+    {
+        curInterface = DevelopInterface;
+        background.sprite = DataManager.instance.backgroundImageDataList.getData("B00001");
+        switchInterface(DevelopInterface);
+        UIUpdata();
     }
 
     private void onDevelopActionEvent(string actionEvent)
