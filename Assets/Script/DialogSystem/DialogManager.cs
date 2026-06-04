@@ -44,6 +44,7 @@ public class DialogManager : MonoBehaviour
         {"high", 3},        //角色高亮
         {"exit",4},         //移除角色
         {"battle",5},       //進入戰鬥
+        {"develop",6},       //進入養成
     };
 
     public Story story;
@@ -207,6 +208,9 @@ public class DialogManager : MonoBehaviour
                 case "battle":
                     string battleID = args[0];
                     GameEventManager.instance.enterBattle(battleID);
+                    break;
+                case "develop":
+                    GameEventManager.instance.enterDevelop();
                     break;
             }
         }

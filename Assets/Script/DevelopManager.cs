@@ -3,20 +3,27 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using TMPro;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using static UnityEngine.GraphicsBuffer;
+using static UnityEngine.InputSystem.PlayerInput;
 
 public class DevelopManager : MonoBehaviour
 {
+    [Header("廣播")]
+    public SkillEffectEventSO globalFadeEvent;
+
     [Header("監聽")]
     public StringEventSO developActionEvent;
     public VoidEventSO developButtonUpdataEvent;
 
     [Header("組件")]
-    public Transform DevelopInterface;
-    public Transform ExerciseInterface;
-    public Transform actionPointGrounp;
+    public Transform developInterface;
+    public Transform proficiencyInterface;
+    public Transform actionPointGroup;
+    public Transform developGroup;
     public Transform selectEventNeedPointGrounp;
     public Image background;
     public Image selectEventImage;
@@ -26,6 +33,9 @@ public class DevelopManager : MonoBehaviour
     public TMP_Text selectEventDescriptionGameObject;
     public TMP_Text selectEventNeedGameObject;
     public GameObject actionPointGameObjecct;
+    public GameObject developButtonGameObjecct;
+
+    public DevelopMapDataSO developMapDataSO;
 
     private Transform curInterface;
     private GameObject curDevelopButton;
@@ -49,9 +59,9 @@ public class DevelopManager : MonoBehaviour
 
     public void initialize() 
     {
-        curInterface = DevelopInterface;
+        curInterface = developInterface;
         background.sprite = DataManager.instance.backgroundImageDataList.getData("B00001");
-        switchInterface(DevelopInterface);
+        switchInterface(developInterface);
         UIUpdata();
     }
 
@@ -63,22 +73,32 @@ public class DevelopManager : MonoBehaviour
         {
             selectEventID = curSelectButton.DevelopEventID;
             DevelopEventDataSO selectEvent = DataManager.instance.developEventDataList.getData(selectEventID);
-            if (selectEvent.actionPoint > DataManager.instance.playerData.developActionPoint) 
-            {
-                return;
-            }
-            else 
-            {
-                DataManager.instance.playerData.developActionPoint -= selectEvent.actionPoint;
-                UIUpdata();
-            }
-        }
-        Debug.Log(selectEventID);
 
-        switch (actionEvent) 
+            if (selectEvent == null || selectEvent.actionPoint > DataManager.instance.playerData.developActionPoint)
+                return;
+
+            DataManager.instance.playerData.developActionPoint -= selectEvent.actionPoint;
+            UIUpdata();
+        }
+
+        StartCoroutine(developAction(actionEvent));
+    }
+
+    private IEnumerator developAction(string actionEvent)
+    {
+        bool isAniFinish = false;
+        globalFadeEvent.raiseEvent(null, Vector2.zero, () =>
+        {
+            isAniFinish = true;
+        }
+        );
+
+        yield return new WaitUntil(() => isAniFinish);
+
+        switch (actionEvent)
         {
             case "Exercise":
-                switchInterface(ExerciseInterface);
+                switchInterface(proficiencyInterface);
                 background.sprite = DataManager.instance.backgroundImageDataList.getData("B00002");
                 break;
             case "Martial":
@@ -99,9 +119,11 @@ public class DevelopManager : MonoBehaviour
                 roundEnd();
                 break;
             case "Back":
-                switchInterface(DevelopInterface);
+                switchInterface(developInterface);
                 break;
             default:
+                GameEventManager.instance.enterDialog(actionEvent);
+                Debug.Log(actionEvent);
                 break;
         }
     }
@@ -118,28 +140,29 @@ public class DevelopManager : MonoBehaviour
         developRoundTextGameObject.text = developRoundText;
         actionTextGameObject.text = $"剩餘體力:{actionPoint}/5";
 
+        selectEventImage.sprite = null;
+        selectEventImage.color = Color.clear;
+        selectEventNameGameObject.text = "";
+        selectEventDescriptionGameObject.text = "";
+        selectEventNeedGameObject.text = "";
+        needActionPoint = 0;
+
         if (curDevelopButton != null && curDevelopButton.TryGetComponent<DevelopButton>(out DevelopButton curSelectButton))
         {
             DevelopEventDataSO selectEvent = DataManager.instance.developEventDataList.getData(curSelectButton.DevelopEventID);
-            selectEventImage.sprite = selectEvent.image;
-            selectEventImage.color = Color.white;
-            selectEventNameGameObject.text = selectEvent.developEventName;
-            selectEventDescriptionGameObject.text = selectEvent.description;
-            selectEventNeedGameObject.text = "需求";
-            needActionPoint = selectEvent.actionPoint;
-        }
-        else 
-        {
-            selectEventImage.sprite = null;
-            selectEventImage.color = Color.clear;
-            selectEventNameGameObject.text = "";
-            selectEventDescriptionGameObject.text = "";
-            selectEventNeedGameObject.text = "";
-            needActionPoint = 0;
+            if(selectEvent != null) 
+            {
+                selectEventImage.sprite = selectEvent.image;
+                selectEventImage.color = Color.white;
+                selectEventNameGameObject.text = selectEvent.developEventName;
+                selectEventDescriptionGameObject.text = selectEvent.description;
+                selectEventNeedGameObject.text = "需求";
+                needActionPoint = selectEvent.actionPoint;
+            }
         }
 
         updataNeedPoint(needActionPoint);
-        updataUIPoint(actionPointGrounp, actionPoint, needActionPoint, "UI00011","UI00012","UI00013");
+        updataUIPoint(actionPointGroup, actionPoint, needActionPoint, "UI00011","UI00012","UI00013");
     }
 
     public void roundEnd() 
@@ -157,8 +180,13 @@ public class DevelopManager : MonoBehaviour
     private void switchInterface(Transform newInterface) 
     {
         curInterface.gameObject.SetActive(false);
-
         curInterface = newInterface;
+
+        if (curInterface = developInterface) 
+        {
+            createDevelopButton();
+        }
+
         curInterface.gameObject.SetActive(true);
     }
 
@@ -201,6 +229,26 @@ public class DevelopManager : MonoBehaviour
         for (int i = 0; i < point; i++) 
         {
             Instantiate(actionPointGameObjecct, selectEventNeedPointGrounp);
+        }
+    }
+
+    private void createDevelopButton() 
+    {
+        clearUIGrounp(developGroup);
+
+        for (int i = 0; i < developMapDataSO.mapSiteList.Count; i++) 
+        {
+            GameObject developButton = Instantiate(developButtonGameObjecct, developGroup);
+            developButton.GetComponent<RectTransform>().anchoredPosition = developMapDataSO.mapSiteList[i].site;
+            developButton.GetComponent<DevelopButton>().initialize("DE00009");
+            
+            developButton.GetComponent<Button>().onClick.AddListener
+            (
+                delegate
+                {
+                    developActionEvent.onEventRaised("B");
+                }
+            );
         }
     }
 

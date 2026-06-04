@@ -11,4 +11,7 @@ public class DevelopEventDataSO : ScriptableObject
     [Header("事件參數")]
     public int actionPoint;
     public Sprite image;
+
+    public int round;
+    public string place;
 }

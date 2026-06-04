@@ -16,8 +16,10 @@ public class GameEventManager : MonoBehaviour
     [Header("²Õ¥ó")]
     public GameObject dialogManager;
     public GameObject battleManager;
+    public GameObject developManager;
+    public PlayerControl playerControl;
 
-    public PlayerControl playerControl; 
+    private GameObject curManager;
 
     private void Awake()
     {
@@ -27,6 +29,8 @@ public class GameEventManager : MonoBehaviour
             Destroy(this.gameObject);
 
         playerControl = new PlayerControl();
+
+        curManager = developManager;
         dialogManager.GetComponent<DialogManager>().initialize();
     }
 
@@ -80,17 +84,34 @@ public class GameEventManager : MonoBehaviour
 
     public void enterBattle(string battleID) 
     {
-        dialogManager.SetActive(false);
-        battleManager.SetActive(true);
+        curManager.SetActive(false);
+        curManager = battleManager;
+
+        curManager.SetActive(true);
         battleManager.GetComponent<BattleManager>().battleInitialize(battleID, DataManager.instance.playerData);
     }
 
     public void endBattle(bool isVictory) 
     {
-
-        battleManager.SetActive(false);
-        dialogManager.SetActive(true);
-        dialogManager.GetComponent<DialogManager>().jumpToStory("B");
         Debug.Log(isVictory);
+
+        enterDialog("B");
+    }
+
+    public void enterDevelop() 
+    {
+        curManager.SetActive(false);
+        curManager = developManager;
+
+        curManager.SetActive(true);
+    }
+
+    public void enterDialog(string DialogID) 
+    {
+        curManager.SetActive(false);
+        curManager = dialogManager;
+
+        curManager.SetActive(true);
+        curManager.GetComponent<DialogManager>().jumpToStory(DialogID);
     }
 }

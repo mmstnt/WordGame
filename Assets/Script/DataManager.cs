@@ -20,6 +20,8 @@ public class DataManager : MonoBehaviour
     public PlayerDataSO playerData;
     public PlayerDataSO basePlayerData;
 
+    private Dictionary<int, Dictionary<string, string[]>> developEventDic = new Dictionary<int, Dictionary<string, string[]>>();
+
     private void Awake()
     {
         if (instance == null)
@@ -33,5 +35,26 @@ public class DataManager : MonoBehaviour
     public void newPlayerData() 
     {
         playerData = Instantiate(basePlayerData);
+    }
+
+    private void initialize() 
+    {
+        Dictionary<int, List<DevelopEventDataSO>> timeEvent = new Dictionary<int, List<DevelopEventDataSO>>();
+        Dictionary<string, DevelopEventDataSO> placeEvent = new Dictionary<string, DevelopEventDataSO>();
+
+        foreach(var developEvent in developEventDataList.dataList) 
+        {
+            if (timeEvent.ContainsKey(developEvent.data.round)) 
+            {
+                timeEvent[developEvent.data.round].Add(developEvent.data);
+            }
+            else 
+            {
+                timeEvent[developEvent.data.round] = new List<DevelopEventDataSO> { developEvent.data };
+            }
+            //developEventDic[developEvent.data.round] = ;
+        }
+
+
     }
 }

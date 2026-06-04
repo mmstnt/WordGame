@@ -31,7 +31,8 @@ public class InkEditor : EditorWindow
         { "show", new[] { "角色物件", "立繪ID", "X座標", "Y座標", "方向" } },
         { "high", new[] { "角色物件", } },
         { "exit", new[] { "角色物件" } },
-        { "battle", new[] { "戰鬥ID" } }
+        { "battle", new[] { "戰鬥ID" } },
+        { "develop", new[] { "進入養成" } }
     };
 
     struct KnotData 
@@ -302,6 +303,7 @@ public class InkEditor : EditorWindow
 
                     if (tagCommand.ContainsKey(cmd))
                     {
+                        //取得該指令所有參數
                         string[] schema = tagCommand[cmd];
                         for (int j = 0; j < schema.Length; j++)
                         {
@@ -322,6 +324,10 @@ public class InkEditor : EditorWindow
 
                                 selectedIndex = EditorGUILayout.Popup(selectedIndex, directionOptions, GUILayout.MinWidth(40), GUILayout.Height(16));
                                 args[j] = directionOptions[selectedIndex];
+                            }
+                            else if (cmd == "develop" && schema[j] == "進入養成") 
+                            {
+                                //break;
                             }
                             else 
                             {
