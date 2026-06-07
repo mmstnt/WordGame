@@ -37,7 +37,7 @@ public class DevelopManager : MonoBehaviour
 
     public DevelopMapDataSO developMapDataSO;
 
-    private Transform curInterface;
+    public Transform curInterface;
     private GameObject curDevelopButton;
 
     private void Awake()
@@ -182,12 +182,12 @@ public class DevelopManager : MonoBehaviour
         curInterface.gameObject.SetActive(false);
         curInterface = newInterface;
 
-        if (curInterface = developInterface) 
+        if (curInterface == developInterface) 
         {
             createDevelopButton();
         }
 
-        curInterface.gameObject.SetActive(true);
+        newInterface.gameObject.SetActive(true);
     }
 
     private void updataUIPoint(Transform UIGrounp, int curPoint, int needPoint, string pointImageID, string nullPointImageID, string prePointImageID)

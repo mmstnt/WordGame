@@ -24895,6 +24895,7 @@ MonoBehaviour:
   actionPointGameObjecct: {fileID: 7865487054519041927, guid: c90250c78fc423041b9c3408f2aae5f6, type: 3}
   developButtonGameObjecct: {fileID: 8151702124899145384, guid: cb886a47003cc0a4898d714aa0dfe536, type: 3}
   developMapDataSO: {fileID: 11400000, guid: 842f6c25757b9054680985023c8363ea, type: 2}
+  curInterface: {fileID: 0}
 --- !u!4 &2026522602
 Transform:
   m_ObjectHideFlags: 0
